@@ -1,0 +1,100 @@
+@import '@fontsource-variable/saira/wdth.css';
+@import '@fontsource-variable/jetbrains-mono/wght.css';
+@import 'tailwindcss';
+@import './tokens.css';
+
+/* La variante dark segue l'attributo impostato da useTheme, non solo la preferenza di sistema. */
+@custom-variant dark (&:where([data-theme='dark'], [data-theme='dark'] *));
+
+/* Token esposti a Tailwind: bg-surface, text-ink, border-panel-line, font-display… */
+@theme inline {
+  --color-bg: var(--c-bg);
+  --color-surface: var(--c-surface);
+  --color-panel-line: var(--c-panel-line);
+  --color-control-border: var(--c-control-border);
+  --color-ink: var(--c-ink);
+  --color-ink-muted: var(--c-ink-muted);
+  --color-federal: var(--c-federal);
+  --color-on-federal: var(--c-on-federal);
+  --color-alert: var(--c-alert);
+  --color-on-alert: var(--c-on-alert);
+  --color-caution: var(--c-caution);
+  --color-on-caution: var(--c-on-caution);
+  --color-ok: var(--c-ok);
+  --color-on-ok: var(--c-on-ok);
+  --color-neutral: var(--c-neutral);
+
+  --font-sans: 'Saira Variable', system-ui, sans-serif;
+  --font-display: 'Saira Variable', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono Variable', ui-monospace, monospace;
+}
+
+@layer base {
+  html {
+    background-color: var(--c-bg);
+    color: var(--c-ink);
+    font-family: var(--font-sans);
+    font-stretch: 100%;
+  }
+
+  body {
+    min-height: 100vh;
+    line-height: 1.5;
+  }
+
+  /* Anello di focus unico per tutti gli elementi interattivi. */
+  :focus-visible {
+    outline: var(--focus-ring-width) solid var(--c-federal);
+    outline-offset: var(--focus-ring-offset);
+  }
+
+  h1,
+  h2,
+  h3 {
+    font-family: var(--font-display);
+    font-stretch: 125%;
+    font-weight: 700;
+    line-height: 1.15;
+  }
+}
+
+@layer utilities {
+  /* Titoli e numeri grandi in Saira Expanded. */
+  .font-expanded {
+    font-stretch: 125%;
+  }
+
+  /* Sopratitoli e matricole: maiuscolo spaziato. */
+  .stencil {
+    text-transform: uppercase;
+    letter-spacing: var(--stencil-tracking);
+  }
+
+  .tabular {
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Contenuto per screen reader, invisibile a schermo. */
+  .visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+    border: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

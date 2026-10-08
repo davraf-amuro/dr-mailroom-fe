@@ -1,0 +1,71 @@
+/*
+ * Token di design "Hangar Federale" (design.md, sezione "Token di design").
+ * Contrasti misurati il 2026-10-08 (WCAG 2.x): ogni coppia testo/fondo >= 4.5:1,
+ * focus e bordi dei controlli >= 3:1. --c-panel-line è solo decorativo (1.4:1).
+ * --c-caution non si usa mai come colore del testo: solo fondo, con --c-on-caution sopra.
+ */
+
+:root {
+  color-scheme: light;
+
+  --c-bg: #f6f7f9;
+  --c-surface: #ffffff;
+  --c-panel-line: #d5dae3;
+  --c-control-border: #6e7890;
+  --c-ink: #0b1020;
+  --c-ink-muted: #4a5470;
+  --c-federal: #0a2989;
+  --c-on-federal: #ffffff;
+  --c-alert: #c00d1e;
+  --c-on-alert: #ffffff;
+  --c-caution: #fce300;
+  --c-on-caution: #0b1020;
+  --c-ok: #0f7b4f;
+  --c-on-ok: #ffffff;
+  --c-neutral: #5b6478;
+
+  --focus-ring-width: 3px;
+  --focus-ring-offset: 2px;
+  --hit-target-min: 44px;
+  --panel-bevel: 12px;
+  --stencil-tracking: 0.12em;
+}
+
+/* Tema scuro "ponte notturno": scelta esplicita (useTheme) oppure preferenza di sistema. */
+:root[data-theme='dark'] {
+  color-scheme: dark;
+
+  --c-bg: #0b1020;
+  --c-surface: #131a33;
+  --c-panel-line: #26304f;
+  --c-control-border: #7480a3;
+  --c-ink: #e8ecf6;
+  --c-ink-muted: #a3adc8;
+  --c-federal: #7c93ff;
+  --c-on-federal: #0b1020;
+  --c-alert: #ff6b70;
+  --c-on-alert: #0b1020;
+  --c-ok: #4cd69a;
+  --c-on-ok: #0b1020;
+  --c-neutral: #9aa3b8;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme]) {
+    color-scheme: dark;
+
+    --c-bg: #0b1020;
+    --c-surface: #131a33;
+    --c-panel-line: #26304f;
+    --c-control-border: #7480a3;
+    --c-ink: #e8ecf6;
+    --c-ink-muted: #a3adc8;
+    --c-federal: #7c93ff;
+    --c-on-federal: #0b1020;
+    --c-alert: #ff6b70;
+    --c-on-alert: #0b1020;
+    --c-ok: #4cd69a;
+    --c-on-ok: #0b1020;
+    --c-neutral: #9aa3b8;
+  }
+}
