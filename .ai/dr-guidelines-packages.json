@@ -1,0 +1,14 @@
+{
+  "installed": [
+    {
+      "package": "dr-fe",
+      "installedAt": "2026-10-08",
+      "commit": "6f669687601a51e93c89e18c49d8866d7bcffd44"
+    },
+    {
+      "package": "dr-guidelines",
+      "installedAt": "2026-10-08",
+      "commit": "916b2577e6770820bb9dde5be233486b2de22ced"
+    }
+  ]
+}
