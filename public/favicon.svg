@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <!-- Marchio dr-mailroom, variante semplificata per 16-32 px: pannello smussato, "MR" senza tagli stencil -->
+  <style>
+    .panel { fill: #0a2989 }
+    .letter { fill: #ffffff }
+    .stripe { fill: #c00d1e }
+    .notch { fill: #fce300 }
+    @media (prefers-color-scheme: dark) {
+      .panel { fill: #7c93ff }
+      .letter { fill: #0b1020 }
+      .stripe { fill: #ff6b70 }
+    }
+  </style>
+  <polygon class="panel" points="5,0 32,0 32,27 27,32 0,32 0,5" />
+  <polygon class="notch" points="21,2.5 29.5,2.5 29.5,5.5 24,5.5" />
+  <g class="letter">
+    <rect x="3" y="8" width="3.5" height="15" />
+    <rect x="11.5" y="8" width="3.5" height="15" />
+    <polygon points="6.5,8 9,13 11.5,8 11.5,13.5 9,18.5 6.5,13.5" />
+    <rect x="17" y="8" width="3.5" height="15" />
+    <path d="M20.5 8 H24.5 A4.25 4.25 0 0 1 24.5 16.5 H20.5 V13.5 H24.5 A1.25 1.25 0 0 0 24.5 11 H20.5 Z" />
+    <polygon points="21,16.5 24.75,16.5 29,23 25.25,23" />
+  </g>
+  <rect class="stripe" x="3" y="26" width="12" height="3" />
+</svg>
