@@ -32,7 +32,7 @@ const links = items.map((item) => {
 <template>
   <nav
     aria-label="Navigazione principale"
-    class="fixed inset-x-0 bottom-0 z-30 border-t border-control-border bg-surface md:sticky md:top-0 md:flex md:h-screen md:flex-col md:border-t-0 md:border-r md:border-panel-line"
+    class="fixed inset-x-0 bottom-0 z-30 border-t border-control-border bg-surface md:sticky md:top-0 md:flex md:h-screen md:flex-col md:border-t-0"
   >
     <div class="hidden px-5 py-6 md:block">
       <slot name="brand" />

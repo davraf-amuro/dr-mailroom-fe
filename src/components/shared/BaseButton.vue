@@ -4,7 +4,7 @@ import { LoaderCircle } from '@lucide/vue'
 
 const props = withDefaults(
   defineProps<{
-    variant?: 'primary' | 'secondary' | 'danger' | 'ghost'
+    variant?: 'primary' | 'secondary' | 'danger' | 'ghost' | 'danger-ghost'
     type?: 'button' | 'submit' | 'reset'
     /** Chiamata in corso: il pulsante resta visibile, annunciato come occupato e non cliccabile. */
     busy?: boolean
@@ -20,6 +20,7 @@ const variantClass = computed(
       secondary: 'bg-surface text-federal border-control-border',
       danger: 'bg-alert text-on-alert border-alert',
       ghost: 'bg-transparent text-federal border-transparent',
+      'danger-ghost': 'bg-transparent text-alert border-transparent',
     })[props.variant],
 )
 </script>

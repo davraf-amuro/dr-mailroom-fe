@@ -24,9 +24,11 @@ onBeforeUnmount(stopViewTransition)
       Vai al contenuto
     </a>
     <div class="min-h-screen md:grid md:grid-cols-[15rem_1fr]">
-      <AppSidebar>
-        <template #brand><AppMark /></template>
-      </AppSidebar>
+      <div class="md:border-r md:border-panel-line md:bg-surface">
+        <AppSidebar>
+          <template #brand><AppMark /></template>
+        </AppSidebar>
+      </div>
       <div class="flex min-w-0 flex-col">
         <AppHeader>
           <template #brand><AppMark compact /></template>

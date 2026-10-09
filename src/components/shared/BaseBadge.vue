@@ -24,7 +24,7 @@ const toneClass = computed(
 
 <template>
   <span
-    class="inline-flex items-center gap-1.5 rounded-sm border px-2 py-0.5 text-sm font-semibold"
+    class="inline-flex items-center gap-1.5 rounded-sm border px-2 py-0.5 text-sm font-semibold whitespace-nowrap"
     :class="toneClass"
   >
     <slot name="icon" />
