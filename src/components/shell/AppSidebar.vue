@@ -16,10 +16,10 @@ interface NavItem {
 }
 
 const items: NavItem[] = [
-  { name: MAILBOXES_ROUTE_NAME, icon: Warehouse, tone: 'bg-lcars-blue' },
-  { name: FILTERS_ROUTE_NAME, icon: Funnel, tone: 'bg-lcars-tan' },
-  { name: RUNS_ROUTE_NAME, icon: Rocket, tone: 'bg-lcars-steel' },
-  { name: STATS_ROUTE_NAME, icon: ChartColumn, tone: 'bg-lcars-rust' },
+  { name: MAILBOXES_ROUTE_NAME, icon: Warehouse, tone: 'bg-lcars-periwinkle' },
+  { name: FILTERS_ROUTE_NAME, icon: Funnel, tone: 'bg-lcars-peach' },
+  { name: RUNS_ROUTE_NAME, icon: Rocket, tone: 'bg-lcars-lilac' },
+  { name: STATS_ROUTE_NAME, icon: ChartColumn, tone: 'bg-lcars-red' },
 ]
 
 const router = useRouter()
@@ -38,7 +38,7 @@ const links = items.map((item) => {
   >
     <!-- Gomito LCARS: si salda alla barra superiore della testata -->
     <div class="lcars-elbow hidden md:flex" aria-hidden="true">
-      <span class="stencil font-mono text-xs text-on-lcars">LCARS 1701-E</span>
+      <span class="stencil font-mono text-xs text-on-lcars">LCARS 1701-D</span>
     </div>
     <ul class="grid grid-cols-4 gap-(--lcars-gap) md:flex md:flex-col">
       <li v-for="link in links" :key="link.name">
@@ -64,7 +64,7 @@ const links = items.map((item) => {
   justify-content: flex-end;
   height: 6rem;
   padding: 0 1rem 0.375rem;
-  background: var(--c-lcars-tan);
+  background: var(--c-lcars-orange);
   border-top-left-radius: var(--lcars-elbow);
 }
 
@@ -79,12 +79,12 @@ const links = items.map((item) => {
   background: radial-gradient(
     circle at 100% 100%,
     transparent calc(1rem - 0.5px),
-    var(--c-lcars-tan) 1rem
+    var(--c-lcars-orange) 1rem
   );
 }
 
 .lcars-tail {
-  background: var(--c-lcars-steel);
+  background: var(--c-lcars-lilac);
   border-bottom-left-radius: var(--lcars-elbow);
 }
 

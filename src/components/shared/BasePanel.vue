@@ -21,7 +21,7 @@ withDefaults(
 
 <style scoped>
 .lcars-panel {
-  --panel-cap: var(--c-lcars-steel);
+  --panel-cap: var(--c-lcars-lilac);
   --panel-cap-width: 0.75rem;
 
   overflow: hidden;
@@ -32,7 +32,7 @@ withDefaults(
 }
 
 .lcars-panel--hero {
-  --panel-cap: var(--c-lcars-tan);
+  --panel-cap: var(--c-lcars-orange);
   --panel-cap-width: 1.25rem;
 }
 

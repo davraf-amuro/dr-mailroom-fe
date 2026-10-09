@@ -23,10 +23,11 @@
   --color-ok: var(--c-ok);
   --color-on-ok: var(--c-on-ok);
   --color-neutral: var(--c-neutral);
-  --color-lcars-blue: var(--c-lcars-blue);
-  --color-lcars-tan: var(--c-lcars-tan);
-  --color-lcars-steel: var(--c-lcars-steel);
-  --color-lcars-rust: var(--c-lcars-rust);
+  --color-lcars-orange: var(--c-lcars-orange);
+  --color-lcars-peach: var(--c-lcars-peach);
+  --color-lcars-lilac: var(--c-lcars-lilac);
+  --color-lcars-periwinkle: var(--c-lcars-periwinkle);
+  --color-lcars-red: var(--c-lcars-red);
   --color-on-lcars: var(--c-on-lcars);
 
   --font-sans: 'Saira Variable', system-ui, sans-serif;

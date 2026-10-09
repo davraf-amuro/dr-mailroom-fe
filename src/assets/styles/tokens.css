@@ -1,6 +1,6 @@
 /*
- * Token di design LCARS "Enterprise-E" (Star Trek: First Contact): fondo nero, blu acciaio,
- * tortora e ruggine; cornici a gomito e blocchi a pillola.
+ * Token di design LCARS "Enterprise-D" (Star Trek: The Next Generation): nero pieno, arancio,
+ * pesca, lilla, pervinca e rosso; cornici a gomito e blocchi a pillola.
  * Contrasti misurati il 2026-10-09 (WCAG 2.x): ogni coppia testo/fondo >= 4.5:1,
  * focus e bordi dei controlli >= 3:1. --c-panel-line è solo decorativo.
  * --c-caution non si usa mai come colore del testo: solo fondo, con --c-on-caution sopra.
@@ -11,28 +11,29 @@
 :root {
   color-scheme: light;
 
-  /* Tema chiaro "plancia diurna": superfici tortora chiaro, stessi blocchi LCARS. */
-  --c-bg: #e8e4dc;
-  --c-surface: #f5f2ec;
-  --c-panel-line: #cfc7b8;
-  --c-control-border: #6b6556;
-  --c-ink: #10141c;
-  --c-ink-muted: #4a4f5c;
-  --c-federal: #2f4a80;
+  /* Tema chiaro "plancia diurna": superfici pesca chiaro, stessi blocchi LCARS. */
+  --c-bg: #f4ebe0;
+  --c-surface: #fbf6ef;
+  --c-panel-line: #dccfc0;
+  --c-control-border: #6e6478;
+  --c-ink: #14101c;
+  --c-ink-muted: #4f4658;
+  --c-federal: #4b3f9e;
   --c-on-federal: #ffffff;
-  --c-alert: #a8321f;
+  --c-alert: #a8323a;
   --c-on-alert: #ffffff;
-  --c-caution: #d9b07c;
-  --c-on-caution: #10141c;
-  --c-ok: #1f6b4a;
+  --c-caution: #ff9900;
+  --c-on-caution: #14101c;
+  --c-ok: #2f6b3a;
   --c-on-ok: #ffffff;
-  --c-neutral: #5a6070;
+  --c-neutral: #5e5668;
 
-  --c-lcars-blue: #6c86bc;
-  --c-lcars-tan: #c79c6e;
-  --c-lcars-steel: #8a9bb8;
-  --c-lcars-rust: #c85c44;
-  --c-on-lcars: #05070c;
+  --c-lcars-orange: #ff9900;
+  --c-lcars-peach: #ffcc99;
+  --c-lcars-lilac: #cc99cc;
+  --c-lcars-periwinkle: #9999ff;
+  --c-lcars-red: #cc6666;
+  --c-on-lcars: #000000;
 
   --focus-ring-width: 3px;
   --focus-ring-offset: 2px;
@@ -49,39 +50,39 @@
 :root[data-theme='dark'] {
   color-scheme: dark;
 
-  --c-bg: #05070c;
-  --c-surface: #10141c;
-  --c-panel-line: #2a3242;
-  --c-control-border: #6f7f99;
-  --c-ink: #e6e9f0;
-  --c-ink-muted: #9aa6bb;
-  --c-federal: #7d9ad6;
-  --c-on-federal: #05070c;
-  --c-alert: #e0533f;
-  --c-on-alert: #05070c;
-  --c-on-caution: #05070c;
-  --c-ok: #6fc7a0;
-  --c-on-ok: #05070c;
-  --c-neutral: #8a96ad;
+  --c-bg: #000000;
+  --c-surface: #0e0c14;
+  --c-panel-line: #2e2838;
+  --c-control-border: #8a7f9e;
+  --c-ink: #f5ede1;
+  --c-ink-muted: #c9b8a6;
+  --c-federal: #9999ff;
+  --c-on-federal: #000000;
+  --c-alert: #ff6666;
+  --c-on-alert: #000000;
+  --c-on-caution: #000000;
+  --c-ok: #99cc99;
+  --c-on-ok: #000000;
+  --c-neutral: #aaa0b8;
 }
 
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme]) {
     color-scheme: dark;
 
-    --c-bg: #05070c;
-    --c-surface: #10141c;
-    --c-panel-line: #2a3242;
-    --c-control-border: #6f7f99;
-    --c-ink: #e6e9f0;
-    --c-ink-muted: #9aa6bb;
-    --c-federal: #7d9ad6;
-    --c-on-federal: #05070c;
-    --c-alert: #e0533f;
-    --c-on-alert: #05070c;
-    --c-on-caution: #05070c;
-    --c-ok: #6fc7a0;
-    --c-on-ok: #05070c;
-    --c-neutral: #8a96ad;
+    --c-bg: #000000;
+    --c-surface: #0e0c14;
+    --c-panel-line: #2e2838;
+    --c-control-border: #8a7f9e;
+    --c-ink: #f5ede1;
+    --c-ink-muted: #c9b8a6;
+    --c-federal: #9999ff;
+    --c-on-federal: #000000;
+    --c-alert: #ff6666;
+    --c-on-alert: #000000;
+    --c-on-caution: #000000;
+    --c-ok: #99cc99;
+    --c-on-ok: #000000;
+    --c-neutral: #aaa0b8;
   }
 }
