@@ -88,6 +88,32 @@
   }
 }
 
+/* Collegamento "Vai al contenuto": fuori schermo finché non riceve il focus da tastiera. */
+.skip-link {
+  position: fixed;
+  top: 0.5rem;
+  left: 0.5rem;
+  z-index: 60;
+  transform: translateY(-200%);
+}
+
+.skip-link:focus {
+  transform: none;
+}
+
+/* Cambio di vista (design.md, "Motion"): solo il contenuto, 200 ms. */
+::view-transition-group(main-content),
+::view-transition-old(main-content),
+::view-transition-new(main-content) {
+  animation-duration: 200ms;
+}
+
+::view-transition-group(root),
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
