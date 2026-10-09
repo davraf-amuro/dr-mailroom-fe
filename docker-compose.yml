@@ -1,0 +1,22 @@
+# dr-mailroom-fe — un container nginx con la build di produzione.
+# Esposto da nginx-proxy (C:\docker\nginx-proxy) su http://mailroom.spectre.local, tramite la rete
+# esterna spectre-net: nessuna porta pubblicata. È l'origine ammessa dal CORS dell'API
+# (Mailroom__Frontend__BaseUrl nel .env del backend).
+# public/config.json (non committato: copia config.example.json e compilalo) si monta in sola lettura.
+
+services:
+  dr-mailroom-fe:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: dr-mailroom-fe:local
+    container_name: dr-mailroom-fe
+    volumes:
+      - ./public/config.json:/usr/share/nginx/html/config.json:ro
+    networks:
+      - spectre-net
+    restart: unless-stopped
+
+networks:
+  spectre-net:
+    external: true

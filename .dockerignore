@@ -1,0 +1,14 @@
+node_modules
+dist
+dist-ssr
+.git
+.ai
+.vscode
+e2e
+test-results
+playwright-report
+coverage
+*.log
+
+# Contiene la chiave API: si monta a runtime, mai dentro l'immagine
+public/config.json

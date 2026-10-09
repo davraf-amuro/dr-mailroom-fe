@@ -41,6 +41,21 @@ npm run dev
 npm run build
 ```
 
+### Run with Docker
+
+Production build served by nginx on <http://mailroom.spectre.local> (the origin allowed by the API CORS), behind the shared `nginx-proxy` container.
+`public/config.json` is mounted at runtime and never baked into the image: copy `public/config.example.json` and fill it in first.
+
+Prerequisites:
+
+- the external Docker network `spectre-net` and the `nginx-proxy` container, with a `server` block for `mailroom.spectre.local` pointing to `http://dr-mailroom-fe:80`;
+- `127.0.0.1  mailroom.spectre.local` in the hosts file;
+- `Mailroom__Frontend__BaseUrl=http://mailroom.spectre.local` in the backend `.env`.
+
+```sh
+docker compose up -d --build
+```
+
 ### Run Unit Tests with [Vitest](https://vitest.dev/)
 
 ```sh
