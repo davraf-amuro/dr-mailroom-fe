@@ -3,7 +3,7 @@ withDefaults(
   defineProps<{
     /** Elemento radice: section per i pannelli con titolo, div per i contenitori. */
     as?: 'section' | 'div' | 'article'
-    /** Cella "eroe" della vista: bordo primario invece della panel line. */
+    /** Cella "eroe" della vista: staffa più spessa nel colore primario della cornice. */
     hero?: boolean
   }>(),
   { as: 'div', hero: false },
@@ -11,29 +11,32 @@ withDefaults(
 </script>
 
 <template>
-  <!-- Bordo come strato esterno ritagliato: clip-path smussa anche il bordo, non solo il fondo -->
-  <component :is="as" class="panel-frame" :class="hero ? 'bg-federal' : 'bg-panel-line'">
-    <div class="panel-body bg-surface p-5">
+  <!-- Staffa LCARS: tappo sinistro arrotondato che prosegue in filetti sopra e sotto -->
+  <component :is="as" class="lcars-panel bg-surface" :class="{ 'lcars-panel--hero': hero }">
+    <div class="panel-body p-5">
       <slot />
     </div>
   </component>
 </template>
 
 <style scoped>
-.panel-frame {
-  padding: 1px;
-  clip-path: polygon(
-    var(--panel-bevel) 0,
-    100% 0,
-    100% calc(100% - var(--panel-bevel)),
-    calc(100% - var(--panel-bevel)) 100%,
-    0 100%,
-    0 var(--panel-bevel)
-  );
+.lcars-panel {
+  --panel-cap: var(--c-lcars-steel);
+  --panel-cap-width: 0.75rem;
+
+  overflow: hidden;
+  border-style: solid;
+  border-color: var(--panel-cap);
+  border-width: 4px 0 4px var(--panel-cap-width);
+  border-radius: 1.5rem 0 0 1.5rem;
+}
+
+.lcars-panel--hero {
+  --panel-cap: var(--c-lcars-tan);
+  --panel-cap-width: 1.25rem;
 }
 
 .panel-body {
   height: 100%;
-  clip-path: inherit;
 }
 </style>

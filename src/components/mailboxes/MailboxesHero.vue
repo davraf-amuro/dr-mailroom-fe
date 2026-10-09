@@ -32,7 +32,7 @@ const parts = computed(() => {
     <div class="flex flex-wrap items-end justify-between gap-6">
       <div>
         <p class="stencil text-sm text-ink-muted">Stato dell'hangar</p>
-        <h2 id="mailboxes-hero-title" class="font-expanded mt-1 text-2xl md:text-3xl">
+        <h2 id="mailboxes-hero-title" class="font-condensed mt-1 text-2xl md:text-3xl">
           <template v-for="(part, index) in parts" :key="part">
             <span v-if="index > 0" class="text-ink-muted" aria-hidden="true"> · </span>
             <span :class="index === 0 ? 'text-federal' : undefined">{{ part }}</span>

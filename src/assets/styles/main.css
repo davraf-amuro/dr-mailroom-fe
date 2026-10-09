@@ -23,6 +23,11 @@
   --color-ok: var(--c-ok);
   --color-on-ok: var(--c-on-ok);
   --color-neutral: var(--c-neutral);
+  --color-lcars-blue: var(--c-lcars-blue);
+  --color-lcars-tan: var(--c-lcars-tan);
+  --color-lcars-steel: var(--c-lcars-steel);
+  --color-lcars-rust: var(--c-lcars-rust);
+  --color-on-lcars: var(--c-on-lcars);
 
   --font-sans: 'Saira Variable', system-ui, sans-serif;
   --font-display: 'Saira Variable', system-ui, sans-serif;
@@ -48,24 +53,28 @@
     outline-offset: var(--focus-ring-offset);
   }
 
+  /* Lettering LCARS: Saira condensata, maiuscolo. */
   h1,
   h2,
   h3 {
     font-family: var(--font-display);
-    font-stretch: 125%;
-    font-weight: 700;
-    line-height: 1.15;
+    font-stretch: 62.5%;
+    font-weight: 600;
+    line-height: 1.1;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
   }
 }
 
 @layer utilities {
-  /* Titoli e numeri grandi in Saira Expanded. */
-  .font-expanded {
-    font-stretch: 125%;
+  /* Titoli e numeri grandi in Saira condensata (lettering LCARS). */
+  .font-condensed {
+    font-stretch: 62.5%;
   }
 
-  /* Sopratitoli e matricole: maiuscolo spaziato. */
+  /* Sopratitoli e matricole: maiuscolo spaziato, condensato. */
   .stencil {
+    font-stretch: 75%;
     text-transform: uppercase;
     letter-spacing: var(--stencil-tracking);
   }

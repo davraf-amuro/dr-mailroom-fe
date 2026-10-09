@@ -26,7 +26,7 @@ const statusId = useId()
         type="search"
         autocomplete="off"
         placeholder="nome@gmail.com"
-        class="mt-1 min-h-11 w-full rounded-sm border border-control-border bg-surface px-3"
+        class="mt-1 min-h-11 w-full rounded-full border border-control-border bg-surface px-4"
       />
     </div>
     <div class="min-w-44">
@@ -34,7 +34,7 @@ const statusId = useId()
       <select
         :id="statusId"
         v-model="status"
-        class="mt-1 min-h-11 w-full rounded-sm border border-control-border bg-surface px-3"
+        class="mt-1 min-h-11 w-full rounded-full border border-control-border bg-surface px-4"
       >
         <option value="">Tutti gli stati</option>
         <option v-for="option in mailboxStatusOptions" :key="option.value" :value="option.value">

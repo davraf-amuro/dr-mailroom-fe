@@ -10,9 +10,16 @@ const { isDark } = storeToRefs(ui)
 </script>
 
 <template>
-  <header class="border-b border-panel-line bg-surface">
+  <header class="bg-bg">
+    <!-- Barra LCARS a segmenti: su desktop prosegue il gomito della colonna di navigazione -->
+    <div class="flex h-(--lcars-bar) gap-(--lcars-gap) pr-3 md:pr-4" aria-hidden="true">
+      <div class="flex-1 rounded-l-full bg-lcars-tan md:rounded-none" />
+      <div class="w-20 bg-lcars-blue" />
+      <div class="w-10 bg-lcars-steel" />
+      <div class="w-8 rounded-r-full bg-lcars-rust" />
+    </div>
     <div class="flex items-center gap-4 px-4 py-3 md:px-8">
-      <div class="md:hidden">
+      <div class="shrink-0">
         <slot name="brand" />
       </div>
       <div class="min-w-0 flex-1">
@@ -20,7 +27,7 @@ const { isDark } = storeToRefs(ui)
       </div>
       <button
         type="button"
-        class="inline-flex size-11 shrink-0 items-center justify-center rounded-sm border border-control-border text-ink"
+        class="inline-flex h-11 w-16 shrink-0 items-center justify-center rounded-full bg-lcars-steel text-on-lcars hover:brightness-110"
         :aria-pressed="isDark"
         aria-label="Tema scuro"
         :title="isDark ? 'Passa al tema chiaro' : 'Passa al tema scuro'"

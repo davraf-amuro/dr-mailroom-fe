@@ -13,7 +13,7 @@ import { MAILBOXES_ROUTE_NAME } from '@/router/routes/mailboxes'
     <template #actions>
       <RouterLink
         :to="{ name: MAILBOXES_ROUTE_NAME }"
-        class="inline-flex min-h-11 items-center rounded-sm border border-federal bg-federal px-4 font-semibold text-on-federal"
+        class="stencil inline-flex min-h-11 items-center rounded-full border border-federal bg-federal px-5 font-semibold text-on-federal"
       >
         Torna alle caselle
       </RouterLink>

@@ -30,7 +30,7 @@ const variantClass = computed(
     :type="type"
     :disabled="disabled || busy"
     :aria-busy="busy ? 'true' : undefined"
-    class="inline-flex min-h-11 items-center justify-center gap-2 rounded-sm border px-4 font-semibold transition-opacity disabled:cursor-not-allowed disabled:opacity-60"
+    class="stencil inline-flex min-h-11 items-center justify-center gap-2 rounded-full border px-5 font-semibold transition-opacity disabled:cursor-not-allowed disabled:opacity-60"
     :class="variantClass"
   >
     <LoaderCircle

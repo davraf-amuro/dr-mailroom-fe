@@ -10,16 +10,17 @@ withDefaults(
 
 <template>
   <!-- Puramente decorativa: il pericolo è sempre detto anche a parole accanto -->
-  <div class="hazard-stripe" :style="{ height: `${height}px` }" aria-hidden="true" />
+  <div class="alert-stripe" :style="{ height: `${height}px` }" aria-hidden="true" />
 </template>
 
 <style scoped>
-.hazard-stripe {
+/* Allerta rossa LCARS: blocchi rossi separati da fessure del colore di fondo. */
+.alert-stripe {
   width: 100%;
   background: repeating-linear-gradient(
-    -45deg,
-    var(--c-caution) 0 10px,
-    var(--c-on-caution) 10px 20px
+    90deg,
+    var(--c-alert) 0 28px,
+    var(--c-bg) 28px calc(28px + var(--lcars-gap))
   );
 }
 </style>

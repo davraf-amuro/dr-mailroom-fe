@@ -28,7 +28,7 @@ withDefaults(
       </g>
       <rect class="mark-stripe" x="8" y="50" width="22" height="4" />
     </svg>
-    <span v-if="!compact" class="font-expanded text-lg leading-none font-bold">
+    <span v-if="!compact" class="font-condensed text-lg leading-none font-bold">
       dr-<span class="text-federal">mailroom</span>
     </span>
   </RouterLink>

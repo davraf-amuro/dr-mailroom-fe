@@ -24,14 +24,13 @@ onBeforeUnmount(stopViewTransition)
       Vai al contenuto
     </a>
     <div class="min-h-screen md:grid md:grid-cols-[15rem_1fr]">
-      <div class="md:border-r md:border-panel-line md:bg-surface">
-        <AppSidebar>
-          <template #brand><AppMark /></template>
-        </AppSidebar>
-      </div>
+      <AppSidebar />
       <div class="flex min-w-0 flex-col">
         <AppHeader>
-          <template #brand><AppMark compact /></template>
+          <template #brand>
+            <span class="md:hidden"><AppMark compact /></span>
+            <span class="hidden md:block"><AppMark /></span>
+          </template>
         </AppHeader>
         <main
           :id="MAIN_CONTENT_ID"
