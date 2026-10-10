@@ -5,7 +5,12 @@ import SortableTable, {
   type SortState,
   type TableColumn,
 } from '@/components/shared/SortableTable.vue'
-import { backfillLabels, backfillState } from '@/composables/mailboxes/mailboxPresentation'
+import {
+  backfillLabels,
+  backfillProgress,
+  backfillState,
+  lastErrorContext,
+} from '@/composables/mailboxes/mailboxPresentation'
 import type { MailboxDto, MailboxId } from '@/services/mailboxesService'
 import { formatDateTime } from '@/utils/formatDate'
 import { formatSerial } from '@/utils/formatSerial'
@@ -32,7 +37,7 @@ const columns: TableColumn[] = [
   { key: 'status', label: 'Stato', sortable: true },
   { key: 'connected', label: 'Collegata', sortable: true },
   { key: 'backfill', label: 'Backfill', sortable: true },
-  { key: 'lastRunAtUtc', label: 'Ultimo giro', sortable: true },
+  { key: 'lastRunAtUtc', label: 'Ultimo giro concluso', sortable: true },
   { key: 'lastError', label: 'Errore' },
   { key: 'actions', label: 'Azioni' },
 ]
@@ -46,6 +51,9 @@ const rows = computed(() =>
     serial: formatSerial(mailbox.id),
     connected: mailbox.isConnected ? 'Sì' : 'No',
     backfill: backfillLabels[backfillState(mailbox)],
+    backfillDetail:
+      backfillState(mailbox) === 'inProgress' ? backfillProgress(mailbox).valueText : null,
+    errorContext: lastErrorContext(mailbox),
     mailbox,
   })),
 )
@@ -73,9 +81,21 @@ const rows = computed(() =>
     <template #cell-status="{ row }">
       <MailboxStatusBadge :status="row.mailbox.status" />
     </template>
+    <template #cell-backfill="{ row }">
+      <span class="text-sm">{{ row.backfill }}</span>
+      <span
+        v-if="row.backfillDetail"
+        class="block text-xs whitespace-nowrap text-ink-muted tabular"
+      >
+        {{ row.backfillDetail }}
+      </span>
+    </template>
     <template #cell-lastRunAtUtc="{ row }">
       <span class="font-mono tabular text-sm whitespace-nowrap">
         {{ formatDateTime(row.mailbox.lastRunAtUtc, 'Mai') }}
+      </span>
+      <span v-if="row.mailbox.currentRun" class="block text-xs whitespace-nowrap text-federal">
+        Giro {{ row.mailbox.currentRun.id }} in corso
       </span>
     </template>
     <template #cell-lastError="{ row }">
@@ -86,7 +106,13 @@ const rows = computed(() =>
       >
         {{ row.mailbox.lastError }}
       </span>
-      <span v-else class="text-ink-muted">—</span>
+      <span
+        v-if="row.mailbox.lastError && row.errorContext"
+        class="block text-xs whitespace-nowrap text-ink-muted tabular"
+      >
+        {{ row.errorContext }}
+      </span>
+      <span v-if="!row.mailbox.lastError" class="text-ink-muted">—</span>
     </template>
     <template #cell-actions="{ row }">
       <MailboxActions

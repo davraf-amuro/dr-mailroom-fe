@@ -22,6 +22,7 @@ export type ApiOutcome<T> =
 
 export const HTTP_STATUS = {
   ok: 200,
+  created: 201,
   accepted: 202,
   noContent: 204,
   badRequest: 400,
@@ -69,6 +70,7 @@ export function interpretResponse<T>(
 ): ApiOutcome<T> {
   switch (status) {
     case HTTP_STATUS.ok:
+    case HTTP_STATUS.created:
     case HTTP_STATUS.noContent:
       return { kind: 'ok', data: body as T }
     case HTTP_STATUS.accepted:

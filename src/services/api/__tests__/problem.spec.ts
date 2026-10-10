@@ -7,6 +7,10 @@ describe('interpretResponse', () => {
     expect(interpretResponse(200, [{ id: 1 }], 'list')).toEqual({ kind: 'ok', data: [{ id: 1 }] })
   })
 
+  it('201 (creazione) è un successo con i dati della risorsa', () => {
+    expect(interpretResponse(201, { id: 5 }, 'resource')).toEqual({ kind: 'ok', data: { id: 5 } })
+  })
+
   it('204 è un successo senza dati', () => {
     expect(interpretResponse(204, undefined, 'resource')).toEqual({ kind: 'ok', data: undefined })
   })

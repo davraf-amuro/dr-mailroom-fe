@@ -78,6 +78,18 @@ export const useMailboxesStore = defineStore('mailboxes', () => {
     }
   }
 
+  /**
+   * Rilettura periodica (avanzamento dei giri): niente stato "loading" né avvisi;
+   * un errore lascia l'ultimo elenco, il banner di stato segnala già API o database giù.
+   */
+  async function refreshSilently(): Promise<void> {
+    const outcome = await listMailboxes(filter.value)
+    if (outcome.kind === 'ok') {
+      items.value = outcome.data
+      loadState.value = outcome.data.length > 0 ? 'ready' : 'empty'
+    }
+  }
+
   function replaceItem(updated: MailboxDto): void {
     items.value = items.value.map((m) => (String(m.id) === String(updated.id) ? updated : m))
   }
@@ -205,6 +217,7 @@ export const useMailboxesStore = defineStore('mailboxes', () => {
     showNotice,
     clearNotice,
     load,
+    refreshSilently,
     setFilter,
     pause,
     resume,

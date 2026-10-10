@@ -4,6 +4,7 @@ import { useStorage, watchDebounced } from '@vueuse/core'
 
 import type { MailboxDto, MailboxId, MailboxStatus } from '@/services/mailboxesService'
 import { useMailboxesStore } from '@/stores/mailboxes'
+import { useMailboxPolling } from './useMailboxPolling'
 import { useOAuthReturn } from './useOAuthReturn'
 
 export type MailboxesLayout = 'cards' | 'table'
@@ -54,6 +55,9 @@ export function useMailboxesView(options: MailboxesViewOptions = {}) {
       highlightId.value = String(newest.id)
     }
   })
+
+  // Avanzamento dei giri: rilettura silenziosa finché c'è qualcosa da seguire
+  useMailboxPolling(items, store.refreshSilently)
 
   async function connect(): Promise<void> {
     const url = await store.requestConnectUrl()

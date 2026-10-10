@@ -26,8 +26,12 @@ function mailbox(overrides: Partial<MailboxDto> = {}): MailboxDto {
     isConnected: true,
     backfillCompleted: true,
     backfillInProgress: false,
+    messagesTotal: null,
+    messagesIndexed: 0,
+    currentRun: null,
     lastRunAtUtc: null,
     lastError: null,
+    lastErrorRunId: null,
     ...overrides,
   }
 }
@@ -48,6 +52,29 @@ describe('store mailboxes', () => {
     const store = useMailboxesStore()
     await store.load()
     expect(store.loadState).toBe('empty')
+    expect(store.notice).toBeNull()
+  })
+
+  it('rilettura silenziosa: aggiorna le caselle senza passare da "loading"', async () => {
+    const store = await storeWith(mailbox({ messagesIndexed: 500 }))
+    vi.mocked(service.listMailboxes).mockResolvedValue({
+      kind: 'ok',
+      data: [mailbox({ messagesIndexed: 1000 })],
+    })
+
+    const pending = store.refreshSilently()
+    expect(store.loadState).toBe('ready')
+    await pending
+    expect(store.items[0]?.messagesIndexed).toBe(1000)
+  })
+
+  it("rilettura silenziosa: un errore lascia l'ultimo elenco e nessun avviso", async () => {
+    const store = await storeWith(mailbox({ messagesIndexed: 500 }))
+    vi.mocked(service.listMailboxes).mockResolvedValue({ kind: 'networkError' })
+
+    await store.refreshSilently()
+    expect(store.items[0]?.messagesIndexed).toBe(500)
+    expect(store.loadState).toBe('ready')
     expect(store.notice).toBeNull()
   })
 

@@ -1,12 +1,18 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import { CircleCheck, CircleDashed, TriangleAlert } from '@lucide/vue'
+import { CircleCheck, CircleDashed, RefreshCw, TriangleAlert } from '@lucide/vue'
 
 import BasePanel from '@/components/shared/BasePanel.vue'
 import HazardStripe from '@/components/shared/HazardStripe.vue'
 import ProgressMeter from '@/components/shared/ProgressMeter.vue'
 import SerialTag from '@/components/shared/SerialTag.vue'
-import { backfillLabels, backfillState } from '@/composables/mailboxes/mailboxPresentation'
+import {
+  backfillLabels,
+  backfillProgress,
+  backfillState,
+  currentRunText,
+  lastErrorContext,
+} from '@/composables/mailboxes/mailboxPresentation'
 import { MailboxStatusValue, type MailboxDto } from '@/services/mailboxesService'
 import { formatDateTime } from '@/utils/formatDate'
 import { formatSerial } from '@/utils/formatSerial'
@@ -31,6 +37,8 @@ const emit = defineEmits<{
 
 const serial = computed(() => formatSerial(props.mailbox.id))
 const backfill = computed(() => backfillState(props.mailbox))
+const progress = computed(() => backfillProgress(props.mailbox))
+const errorContext = computed(() => lastErrorContext(props.mailbox))
 const revoked = computed(() => props.mailbox.status === MailboxStatusValue.TokenRevoked)
 const deleted = computed(() => props.mailbox.status === MailboxStatusValue.Deleted)
 const titleId = computed(() => `mailbox-${props.mailbox.id}-title`)
@@ -63,7 +71,12 @@ const titleId = computed(() => `mailbox-${props.mailbox.id}-title`)
       <div>
         <dt class="stencil text-xs text-ink-muted">Lettura dello storico</dt>
         <dd v-if="backfill === 'inProgress'" class="mt-1">
-          <ProgressMeter :label="backfillLabels.inProgress" />
+          <ProgressMeter
+            :label="backfillLabels.inProgress"
+            :value="progress.value"
+            :max="progress.max"
+            :value-text="progress.valueText"
+          />
         </dd>
         <dd v-else class="mt-1 flex items-center gap-1.5">
           <CircleCheck
@@ -77,21 +90,38 @@ const titleId = computed(() => `mailbox-${props.mailbox.id}-title`)
           {{ backfillLabels[backfill] }}
         </dd>
       </div>
+      <div v-if="mailbox.currentRun">
+        <dt class="stencil text-xs text-ink-muted">Giro in corso</dt>
+        <dd class="mt-1 flex items-start gap-1.5">
+          <RefreshCw
+            :size="16"
+            :stroke-width="1.75"
+            class="mt-0.5 shrink-0 text-federal"
+            aria-hidden="true"
+          />
+          <span class="tabular">{{ currentRunText(mailbox.currentRun) }}</span>
+        </dd>
+      </div>
       <div>
-        <dt class="stencil text-xs text-ink-muted">Ultimo giro</dt>
+        <dt class="stencil text-xs text-ink-muted">Ultimo giro concluso</dt>
         <dd class="mt-1 font-mono tabular">{{ formatDateTime(mailbox.lastRunAtUtc, 'Mai') }}</dd>
       </div>
       <div v-if="mailbox.lastError">
         <dt class="stencil text-xs text-ink-muted">Ultimo errore</dt>
-        <dd class="mt-1 flex items-start gap-1.5 text-alert">
-          <TriangleAlert
-            :size="16"
-            :stroke-width="1.75"
-            class="mt-0.5 shrink-0"
-            aria-hidden="true"
-          />
-          <span class="line-clamp-2 break-words" :title="mailbox.lastError">
-            {{ mailbox.lastError }}
+        <dd class="mt-1 text-alert">
+          <span class="flex items-start gap-1.5">
+            <TriangleAlert
+              :size="16"
+              :stroke-width="1.75"
+              class="mt-0.5 shrink-0"
+              aria-hidden="true"
+            />
+            <span class="line-clamp-2 break-words" :title="mailbox.lastError">
+              {{ mailbox.lastError }}
+            </span>
+          </span>
+          <span v-if="errorContext" class="mt-0.5 block pl-[22px] text-xs text-ink-muted tabular">
+            {{ errorContext }}
           </span>
         </dd>
       </div>

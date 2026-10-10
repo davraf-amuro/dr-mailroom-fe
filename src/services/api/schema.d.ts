@@ -444,6 +444,46 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/stats/senders/overview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Panoramica mittenti di una casella
+         * @description Per indirizzo email (mai per nome): numero di mail, data e oggetto della più vecchia e della più recente. Paginata (pageSize 1–100, default 25), ordinabile (sortBy MailCount|LastReceivedAt|FirstReceivedAt|SenderAddress, sortDir Asc|Desc; default MailCount Desc), ricerca nell'indirizzo, year facoltativo. 404 se la casella non esiste; nessun mittente → 200 con totalCount 0.
+         */
+        get: operations["GetSenderOverview"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/stats/years": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Mail per anno
+         * @description Mail ricevute per anno, dal più recente, della casella o di un suo mittente (senderAddress confrontato per uguaglianza). 404 se la casella non esiste; nessuna mail → 200 con lista vuota.
+         */
+        get: operations["GetYearStatList"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/alerts": {
         parameters: {
             query?: never;
@@ -638,7 +678,10 @@ export interface components {
                 [key: string]: string[];
             };
         };
-        /** @description Casella con stato, collegamento e avanzamento del backfill. */
+        /**
+         * @description Casella con stato, collegamento e avanzamento del backfill: MessagesIndexed su MessagesTotal (totale Gmail, approssimato),
+         *     giro in corso (null se nessuno) e giro che ha prodotto LastError.
+         */
         MailboxDto: {
             /** Format: int32 */
             id: number | string;
@@ -647,9 +690,25 @@ export interface components {
             isConnected: boolean;
             backfillCompleted: boolean;
             backfillInProgress: boolean;
+            /** Format: int32 */
+            messagesTotal: null | number | string;
+            /** Format: int32 */
+            messagesIndexed: number | string;
+            currentRun: null | components["schemas"]["MailboxRunDto"];
             /** Format: date-time */
             lastRunAtUtc: null | string;
             lastError: null | string;
+            /** Format: int64 */
+            lastErrorRunId: null | number | string;
+        };
+        /** @description Giro in corso su una casella, con le mail lette finora (aggiornate a fine pagina). */
+        MailboxRunDto: {
+            /** Format: int64 */
+            id: number | string;
+            /** Format: date-time */
+            startedAtUtc: string;
+            /** Format: int32 */
+            messagesRead: number | string;
         };
         /**
          * @description Stato operativo di una casella collegata.
@@ -755,6 +814,31 @@ export interface components {
             /** Format: int32 */
             mailCount: number | string;
         };
+        /** @description Mittente (per indirizzo) con numero di mail, la più vecchia e la più recente (data e oggetto). */
+        SenderOverviewDto: {
+            senderAddress: string;
+            senderName: null | string;
+            /** Format: int32 */
+            mailCount: number | string;
+            /** Format: date-time */
+            firstReceivedAtUtc: string;
+            firstSubject: null | string;
+            /** Format: date-time */
+            lastReceivedAtUtc: string;
+            lastSubject: null | string;
+        };
+        /** @description Pagina della panoramica mittenti: TotalCount = mittenti che rispettano il filtro. */
+        SenderOverviewPageDto: {
+            items: components["schemas"]["SenderOverviewDto"][];
+            /** Format: int32 */
+            page: number | string;
+            /** Format: int32 */
+            pageSize: number | string;
+            /** Format: int32 */
+            totalCount: number | string;
+        };
+        /** @enum {unknown} */
+        SenderOverviewSortBy: "MailCount" | "LastReceivedAt" | "FirstReceivedAt" | "SenderAddress" | null;
         /** @description Totale mail di un mittente in una casella (vista keyless: un solo DTO). */
         SenderStatDto: {
             /** Format: int32 */
@@ -763,6 +847,8 @@ export interface components {
             /** Format: int32 */
             mailCount: number | string;
         };
+        /** @enum {unknown} */
+        SortDirection: "Asc" | "Desc" | null;
         /** @description Body del giro manuale: casella; null = tutte le caselle attive (D17). */
         StartRunRequest: {
             /** Format: int32 */
@@ -770,6 +856,13 @@ export interface components {
         };
         /** @enum {unknown} */
         SubjectMatchType: "StartsWith" | "Contains" | "Regex" | null;
+        /** @description Mail ricevute in un anno. */
+        YearStatDto: {
+            /** Format: int32 */
+            year: number | string;
+            /** Format: int32 */
+            mailCount: number | string;
+        };
     };
     responses: never;
     parameters: never;
@@ -2119,6 +2212,132 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["SenderMonthlyStatDto"][];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HttpValidationProblemDetails"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    GetSenderOverview: {
+        parameters: {
+            query?: {
+                MailboxId?: number | string;
+                /** @description Anno di ricezione; null = tutto lo storico. */
+                Year?: number | string;
+                /** @description Testo cercato nell'indirizzo del mittente (contiene, minuscolo). */
+                Search?: string;
+                SortBy?: components["schemas"]["SenderOverviewSortBy"];
+                SortDir?: components["schemas"]["SortDirection"];
+                /** @description Pagina da 1. */
+                Page?: number | string;
+                PageSize?: number | string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SenderOverviewPageDto"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HttpValidationProblemDetails"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    GetYearStatList: {
+        parameters: {
+            query?: {
+                MailboxId?: number | string;
+                SenderAddress?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["YearStatDto"][];
                 };
             };
             /** @description Bad Request */
