@@ -50,7 +50,7 @@ const titleId = computed(() => `mailbox-${props.mailbox.id}-title`)
     :aria-labelledby="titleId"
     :class="[highlight ? 'hangar-lights' : undefined, deleted ? 'opacity-75' : undefined]"
   >
-    <HazardStripe v-if="revoked" class="-mx-5 -mt-5 mb-4 w-auto" />
+    <HazardStripe v-if="revoked" class="-mx-4 -mt-4 mb-3 w-auto" />
     <div class="flex flex-wrap items-center justify-between gap-2">
       <SerialTag :code="serial" :label="`Unità ${serial}`" />
       <MailboxStatusBadge :status="mailbox.status" />
@@ -67,7 +67,7 @@ const titleId = computed(() => `mailbox-${props.mailbox.id}-title`)
       {{ mailbox.isConnected ? 'Collegata a Google' : 'Non collegata' }}
     </p>
 
-    <dl class="mt-4 space-y-3 text-sm">
+    <dl class="mt-3 space-y-3 text-sm">
       <div>
         <dt class="stencil text-xs text-ink-muted">Lettura dello storico</dt>
         <dd v-if="backfill === 'inProgress'" class="mt-1">
@@ -128,7 +128,7 @@ const titleId = computed(() => `mailbox-${props.mailbox.id}-title`)
     </dl>
 
     <MailboxActions
-      class="mt-5"
+      class="mt-4"
       :status="mailbox.status"
       :email-address="mailbox.emailAddress"
       :busy="busy"

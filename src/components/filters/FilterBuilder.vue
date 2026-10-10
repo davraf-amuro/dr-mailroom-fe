@@ -119,7 +119,7 @@ const controlClass =
       </div>
     </div>
 
-    <div class="mt-5 space-y-5">
+    <div class="mt-4 space-y-4">
       <div>
         <label :for="ids.name" class="block text-sm font-semibold">Nome del filtro</label>
         <input
@@ -340,7 +340,7 @@ const controlClass =
       </div>
     </div>
 
-    <div class="mt-6 flex flex-wrap gap-3">
+    <div class="mt-4 flex flex-wrap gap-3">
       <BaseButton type="submit" :busy="saving" :disabled="previewBusy">
         <template #icon><Save :size="20" :stroke-width="1.75" aria-hidden="true" /></template>
         {{ editingName ? 'Salva modifiche' : 'Crea filtro' }}

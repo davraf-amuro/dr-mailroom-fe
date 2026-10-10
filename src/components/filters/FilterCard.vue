@@ -80,7 +80,7 @@ const sentence = computed(() => filterSentence(props.filter, props.mailbox))
       </li>
     </ul>
 
-    <div class="mt-5 flex flex-wrap gap-2">
+    <div class="mt-4 flex flex-wrap gap-2">
       <BaseButton
         variant="secondary"
         :aria-label="`Modifica ${filter.name}`"

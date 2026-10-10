@@ -29,7 +29,7 @@ const parts = computed(() => {
 
 <template>
   <BasePanel as="section" hero aria-labelledby="mailboxes-hero-title" class="hero-cell">
-    <div class="flex flex-wrap items-end justify-between gap-6">
+    <div class="flex flex-wrap items-end justify-between gap-4">
       <div>
         <p class="stencil text-sm text-ink-muted">Stato dell'hangar</p>
         <h2 id="mailboxes-hero-title" class="font-condensed mt-1 text-2xl md:text-3xl">

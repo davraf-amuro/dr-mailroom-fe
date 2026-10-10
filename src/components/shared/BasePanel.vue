@@ -13,7 +13,7 @@ withDefaults(
 <template>
   <!-- Staffa LCARS: tappo sinistro arrotondato che prosegue in filetti sopra e sotto -->
   <component :is="as" class="lcars-panel bg-surface" :class="{ 'lcars-panel--hero': hero }">
-    <div class="panel-body p-5">
+    <div class="panel-body p-4">
       <slot />
     </div>
   </component>
