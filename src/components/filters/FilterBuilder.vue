@@ -1,11 +1,14 @@
 <script setup lang="ts">
-import { nextTick, ref, useId, watch } from 'vue'
+import { computed, nextTick, ref, useId, watch } from 'vue'
 import { LayoutList, MessageSquareQuote, Save, SearchCheck, X } from '@lucide/vue'
 
 import BaseButton from '@/components/shared/BaseButton.vue'
 import FieldError from '@/components/shared/FieldError.vue'
 import { FILTER_LIMITS, FilterField, type FilterFormState } from '@/composables/filters/filterForm'
-import { subjectChoiceOptions } from '@/composables/filters/filterPresentation'
+import {
+  subjectChoiceOptions,
+  subjectValuePlaceholders,
+} from '@/composables/filters/filterPresentation'
 import type { BuilderMode } from '@/composables/filters/useFilterBuilder'
 import type { FieldErrors } from '@/services/api/problem'
 import type { MailboxSummaryDto } from '@/services/mailboxesService'
@@ -36,10 +39,15 @@ const ids = {
   subjectValue: `${uid}-subject-value`,
   extract: `${uid}-extract`,
   subfolder: `${uid}-subfolder`,
+  subfolderHint: `${uid}-subfolder-hint`,
   alert: `${uid}-alert`,
   enabled: `${uid}-enabled`,
   processes: `${uid}-processes`,
 }
+
+const subjectValuePlaceholder = computed(() =>
+  form.value.subjectMatchType === '' ? '' : subjectValuePlaceholders[form.value.subjectMatchType],
+)
 
 const formElement = ref<HTMLFormElement | null>(null)
 const nameInput = ref<HTMLInputElement | null>(null)
@@ -121,7 +129,7 @@ const controlClass =
           type="text"
           autocomplete="off"
           :maxlength="FILTER_LIMITS.nameMax"
-          placeholder="Fatture dei fornitori"
+          placeholder="es. Fatture dei fornitori"
           :class="controlClass"
           :aria-invalid="invalid(FilterField.name)"
           :aria-describedby="describedBy(FilterField.name, `${ids.name}-error`)"
@@ -148,7 +156,7 @@ const controlClass =
               inputmode="email"
               autocomplete="off"
               :maxlength="FILTER_LIMITS.senderMax"
-              placeholder="fatture@fornitore.it"
+              placeholder="es. fatture@fornitore.it"
               :class="controlClass"
               :aria-invalid="invalid(FilterField.senderAddress)"
               :aria-describedby="describedBy(FilterField.senderAddress, `${ids.sender}-error`)"
@@ -242,7 +250,7 @@ const controlClass =
               type="text"
               autocomplete="off"
               :maxlength="FILTER_LIMITS.subjectValueMax"
-              placeholder="fattura"
+              :placeholder="subjectValuePlaceholder"
               :class="controlClass"
               :aria-invalid="invalid(FilterField.subjectValue)"
               :aria-describedby="describedBy(FilterField.subjectValue, `${ids.subjectValue}-error`)"
@@ -280,7 +288,7 @@ const controlClass =
               :for="ids.subfolder"
               :class="mode === 'phrase' ? 'visually-hidden' : 'block text-sm font-semibold'"
             >
-              Cartella degli allegati
+              Sottocartella degli allegati
             </label>
             <div class="flex items-center gap-2">
               <span v-if="mode === 'phrase'" class="lead stencil" aria-hidden="true">in</span>
@@ -290,14 +298,22 @@ const controlClass =
                 type="text"
                 autocomplete="off"
                 :maxlength="FILTER_LIMITS.subfolderMax"
-                placeholder="fatture/fornitore"
+                placeholder="es. fornitore"
                 :class="controlClass"
                 :aria-invalid="invalid(FilterField.attachmentSubfolder)"
                 :aria-describedby="
-                  describedBy(FilterField.attachmentSubfolder, `${ids.subfolder}-error`)
+                  describedBy(
+                    FilterField.attachmentSubfolder,
+                    `${ids.subfolder}-error`,
+                    ids.subfolderHint,
+                  )
                 "
               />
             </div>
+            <p :id="ids.subfolderHint" class="mt-1 text-sm text-ink-muted">
+              Sottocartella dentro la cartella allegati del server (es. fornitore o fatture/2026).
+              Niente lettera di unità né «..».
+            </p>
             <FieldError
               :id="`${ids.subfolder}-error`"
               :messages="messagesOf(FilterField.attachmentSubfolder)"

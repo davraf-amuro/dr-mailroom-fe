@@ -25,7 +25,7 @@ const statusId = useId()
         v-model="emailAddress"
         type="search"
         autocomplete="off"
-        placeholder="nome@gmail.com"
+        placeholder="Parte dell'indirizzo, es. gmail"
         class="mt-1 min-h-11 w-full rounded-full border border-control-border bg-surface px-4"
       />
     </div>
