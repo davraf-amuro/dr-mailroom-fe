@@ -61,7 +61,7 @@ const firstLoad = computed(() => loadState.value === 'loading' && rows.value.len
   <PageHeading :title="route.meta.title" :overline="route.meta.overline" />
 
   <InlineNotice
-    class="mb-6"
+    class="mb-4"
     :tone="notice?.tone ?? null"
     :text="notice?.text ?? null"
     @dismiss="clearNotice()"
@@ -74,7 +74,7 @@ const firstLoad = computed(() => loadState.value === 'loading' && rows.value.len
     description="Le statistiche compaiono dopo il primo giro su una casella."
   />
 
-  <div v-else class="space-y-6">
+  <div v-else class="space-y-4">
     <BasePanel as="section" hero aria-labelledby="stats-hero-title">
       <p class="stencil text-sm text-ink-muted">Rapporto di intelligence</p>
       <h2 id="stats-hero-title" class="font-condensed mt-1 text-2xl md:text-3xl">
@@ -112,7 +112,7 @@ const firstLoad = computed(() => loadState.value === 'loading' && rows.value.len
       </div>
     </section>
 
-    <section aria-labelledby="stats-table-title" class="space-y-4">
+    <section aria-labelledby="stats-table-title" class="space-y-3">
       <div class="flex flex-wrap items-end justify-between gap-2">
         <div>
           <p class="stencil text-sm text-ink-muted">Schedario</p>

@@ -35,7 +35,7 @@ onBeforeUnmount(stopViewTransition)
         <main
           :id="MAIN_CONTENT_ID"
           tabindex="-1"
-          class="app-main flex-1 px-4 pt-6 pb-24 md:px-8 md:pb-10"
+          class="app-main flex-1 px-4 pt-4 pb-24 md:px-6 md:pb-6"
         >
           <RouterView />
         </main>

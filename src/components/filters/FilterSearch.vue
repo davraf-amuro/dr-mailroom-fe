@@ -30,7 +30,7 @@ const controlClass =
         v-model="name"
         type="search"
         autocomplete="off"
-        placeholder="Fatture"
+        placeholder="Parte del nome, es. fatture"
         :class="controlClass"
       />
     </div>
@@ -41,7 +41,7 @@ const controlClass =
         v-model="sender"
         type="search"
         autocomplete="off"
-        placeholder="fatture@fornitore.it"
+        placeholder="Parte dell'indirizzo, es. fornitore"
         :class="controlClass"
       />
     </div>

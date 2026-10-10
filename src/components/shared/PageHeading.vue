@@ -8,7 +8,7 @@ defineProps<{
 </script>
 
 <template>
-  <div class="mb-6 flex flex-wrap items-end justify-between gap-4">
+  <div class="mb-4 flex flex-wrap items-end justify-between gap-4">
     <div class="min-w-0">
       <p v-if="overline" class="stencil text-sm text-ink-muted">{{ overline }}</p>
       <h1 class="text-3xl md:text-4xl">{{ title }}</h1>

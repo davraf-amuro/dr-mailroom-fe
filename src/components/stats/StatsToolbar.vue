@@ -67,7 +67,7 @@ function valueOf(event: Event): string {
         v-model="search"
         type="search"
         autocomplete="off"
-        placeholder="fatture@fornitore.it"
+        placeholder="Parte dell'indirizzo, es. fornitore"
         :class="controlClass"
       />
     </div>

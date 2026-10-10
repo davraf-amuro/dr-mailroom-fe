@@ -57,7 +57,7 @@ const {
   <PageHeading :title="route.meta.title" :overline="route.meta.overline" />
 
   <InlineNotice
-    class="mb-6"
+    class="mb-4"
     :tone="notice?.tone ?? null"
     :text="notice?.text ?? null"
     @dismiss="clearNotice()"
@@ -65,7 +65,7 @@ const {
   <!-- Avanzamento dei giri per gli screen reader: al massimo un annuncio ogni 10 s -->
   <LiveRegion :message="liveMessage" />
 
-  <div class="space-y-6">
+  <div class="space-y-4">
     <RunLaunchPad
       v-model:mailbox="launchMailbox"
       :mailboxes="launchableMailboxes"
@@ -79,7 +79,7 @@ const {
       @cancel="askCancel"
     />
 
-    <section aria-labelledby="runs-history-title" class="space-y-4">
+    <section aria-labelledby="runs-history-title" class="space-y-3">
       <div class="flex flex-wrap items-end justify-between gap-4">
         <div>
           <p class="stencil text-sm text-ink-muted">Registro dei giri</p>

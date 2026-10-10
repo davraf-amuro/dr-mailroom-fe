@@ -49,14 +49,14 @@ const {
   <PageHeading :title="route.meta.title" :overline="route.meta.overline" />
 
   <InlineNotice
-    class="mb-6"
+    class="mb-4"
     :tone="notice?.tone ?? null"
     :text="notice?.text ?? null"
     @dismiss="clearNotice()"
   />
 
-  <div class="space-y-6">
-    <section aria-label="Costruttore di filtri" class="grid gap-6 lg:grid-cols-[3fr_2fr]">
+  <div class="space-y-4">
+    <section aria-label="Costruttore di filtri" class="grid gap-4 lg:grid-cols-[3fr_2fr]">
       <BasePanel hero>
         <FilterBuilder
           v-model:form="builder.form"
@@ -122,7 +122,7 @@ const {
       />
 
       <section v-else aria-label="Filtri esistenti">
-        <ul class="grid gap-5 md:grid-cols-2 2xl:grid-cols-3">
+        <ul class="grid gap-3 md:grid-cols-2 2xl:grid-cols-3">
           <li v-for="filter in items" :key="String(filter.id)">
             <FilterCard
               class="h-full"

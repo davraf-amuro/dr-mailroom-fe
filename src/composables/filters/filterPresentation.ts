@@ -20,6 +20,13 @@ const subjectVerb: Record<keyof typeof SubjectMatchTypeValue, string> = {
   Regex: 'corrisponde a',
 }
 
+/** Esempio nel campo del testo da cercare, coerente con il tipo di condizione scelto. */
+export const subjectValuePlaceholders: Record<keyof typeof SubjectMatchTypeValue, string> = {
+  StartsWith: 'es. Fattura n.',
+  Contains: 'es. fattura',
+  Regex: 'es. ^Fattura \\d+',
+}
+
 export const processLabels: Record<ProcessType, string> = {
   AttachmentExtraction: 'Estrai allegati',
   Alert: 'Crea allerta',

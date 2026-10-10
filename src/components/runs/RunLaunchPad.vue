@@ -30,8 +30,8 @@ const uid = useId()
 
 <template>
   <BasePanel as="section" hero :aria-labelledby="`${uid}-title`">
-    <div class="grid gap-6 xl:grid-cols-[3fr_1fr]">
-      <div class="space-y-5">
+    <div class="grid gap-4 xl:grid-cols-[3fr_1fr]">
+      <div class="space-y-4">
         <div>
           <p class="stencil text-sm text-ink-muted">Ponte di lancio</p>
           <h2 :id="`${uid}-title`" class="font-condensed mt-1 text-2xl md:text-3xl">
@@ -73,7 +73,7 @@ const uid = useId()
           <p v-if="bridge.length === 0" class="text-ink-muted">
             Nessun giro in corso. Il cron avvia i giri da solo; «Esegui ora» ne lancia uno subito.
           </p>
-          <TransitionGroup v-else name="sortie" tag="ul" class="grid gap-4 lg:grid-cols-2">
+          <TransitionGroup v-else name="sortie" tag="ul" class="grid gap-3 lg:grid-cols-2">
             <li v-for="run in bridge" :key="String(run.id)">
               <RunBridgeCard
                 class="h-full"

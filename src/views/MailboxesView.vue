@@ -51,7 +51,7 @@ const {
   <PageHeading :title="route.meta.title" :overline="route.meta.overline" />
 
   <InlineNotice
-    class="mb-6"
+    class="mb-4"
     :tone="notice?.tone ?? null"
     :text="notice?.text ?? null"
     @dismiss="clearNotice()"
@@ -82,7 +82,7 @@ const {
     </template>
   </EmptyState>
 
-  <div v-else class="space-y-6">
+  <div v-else class="space-y-4">
     <MailboxesHero :counts="counts" :connecting="connecting" @connect="connect()" />
 
     <div class="flex flex-wrap items-end justify-between gap-4">
@@ -120,7 +120,7 @@ const {
     />
 
     <section v-else-if="layout === 'cards'" aria-label="Unità in hangar">
-      <ul class="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
+      <ul class="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
         <li v-for="mailbox in items" :key="mailbox.id">
           <MailboxCard
             class="h-full"
