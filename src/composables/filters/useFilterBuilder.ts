@@ -82,6 +82,14 @@ export function useFilterBuilder() {
     },
   )
 
+  // "Nessuna condizione" nasconde il testo: un valore rimasto bloccherebbe la validazione
+  watch(
+    () => form.subjectMatchType,
+    (type) => {
+      if (type === '') form.subjectValue = ''
+    },
+  )
+
   function requestFocus(): void {
     focusToken.value++
   }
