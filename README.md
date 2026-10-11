@@ -1,88 +1,23 @@
 # dr-mailroom-fe
 
-This template should help get you started developing with Vue 3 in Vite.
+Frontend di [dr-mailroom](https://github.com/davraf-amuro/dr-mailroom), il servizio che legge caselle Gmail in sola lettura. È una SPA Vue 3 + Vite + TypeScript che parla solo con l'API REST del backend (`/api/v1`), autenticata con una chiave API letta a runtime da `config.json`. In produzione gira in un container nginx.
 
-## Recommended IDE Setup
+Le viste:
 
-[VS Code](https://code.visualstudio.com/) + [Vue (Official)](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur).
+- **Caselle**: collegamento a Gmail, avanzamento del primo giro, pausa e ripresa, rimozione
+- **Filtri**: costruttore di regole su mittente e oggetto, anteprima sulle mail già lette, riapplica allo storico
+- **Esecuzioni**: «Esegui ora», giri in corso con avanzamento e annullamento, cronologia
+- **Statistiche**: mittenti più attivi, panoramica paginata per mittente e griglia delle mail di un mittente
+- **Banner di stato**: database o servizio non raggiungibili, chiave API rifiutata
 
-## Recommended Browser Setup
+Cosa deve fare il frontend è descritto nella [specifica](https://github.com/davraf-amuro/dr-mailroom/blob/main/docs/frontend-specifiche.md) del backend. La direzione visiva, i token e il lessico sono in [design.md](https://github.com/davraf-amuro/dr-mailroom/blob/main/.ai/plans/2026-10-08-dr-mailroom-fe/design.md).
 
-- Chromium-based browsers (Chrome, Edge, Brave, etc.):
-  - [Vue.js devtools](https://chromewebstore.google.com/detail/vuejs-devtools/nhdogjmejiglipccpnnnanhbledajbpd)
-  - [Turn on Custom Object Formatter in Chrome DevTools](http://bit.ly/object-formatters)
-- Firefox:
-  - [Vue.js devtools](https://addons.mozilla.org/en-US/firefox/addon/vue-js-devtools/)
-  - [Turn on Custom Object Formatter in Firefox DevTools](https://fxdx.dev/firefox-devtools-custom-object-formatters/)
+## Documentazione
 
-## Type Support for `.vue` Imports in TS
+| File | Contenuto |
+|---|---|
+| [docs/sviluppo.md](docs/sviluppo.md) | Avvio in locale, profili VS Code, `config.json`, `gen:api`, test e controlli di qualità |
+| [docs/container.md](docs/container.md) | Immagine nginx, pubblicazione dietro `nginx-proxy`, CORS e rischio della chiave API in una SPA |
 
-TypeScript cannot handle type information for `.vue` imports by default, so we replace the `tsc` CLI with `vue-tsc` for type checking. In editors, we need [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) to make the TypeScript language service aware of `.vue` types.
-
-## Customize configuration
-
-See [Vite Configuration Reference](https://vite.dev/config/).
-
-## Project Setup
-
-```sh
-npm install
-```
-
-### Compile and Hot-Reload for Development
-
-```sh
-npm run dev
-```
-
-### Type-Check, Compile and Minify for Production
-
-```sh
-npm run build
-```
-
-### Run with Docker
-
-Production build served by nginx on <http://mailroom.spectre.local> (the origin allowed by the API CORS), behind the shared `nginx-proxy` container.
-`public/config.json` is mounted at runtime and never baked into the image: copy `public/config.example.json` and fill it in first.
-
-Prerequisites:
-
-- the external Docker network `spectre-net` and the `nginx-proxy` container, with a `server` block for `mailroom.spectre.local` pointing to `http://dr-mailroom-fe:80`;
-- `127.0.0.1  mailroom.spectre.local` in the hosts file;
-- `Mailroom__Frontend__BaseUrl=http://mailroom.spectre.local` in the backend `.env`.
-
-```sh
-docker compose up -d --build
-```
-
-### Run Unit Tests with [Vitest](https://vitest.dev/)
-
-```sh
-npm run test:unit
-```
-
-### Run End-to-End Tests with [Playwright](https://playwright.dev)
-
-```sh
-# Install browsers for the first run
-npx playwright install
-
-# When testing on CI, must build the project first
-npm run build
-
-# Runs the end-to-end tests
-npm run test:e2e
-# Runs the tests only on Chromium
-npm run test:e2e -- --project=chromium
-# Runs the tests of a specific file
-npm run test:e2e -- tests/example.spec.ts
-# Runs the tests in debug mode
-npm run test:e2e -- --debug
-```
-
-### Lint with [ESLint](https://eslint.org/)
-
-```sh
-npm run lint
-```
+---
+*Documento aggiornato: Ottobre 2026 — Revisione v1.0 — 2026-10-11 — claude-opus-5-5*
