@@ -1,10 +1,12 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import { Paperclip } from '@lucide/vue'
+import { Paperclip, Send } from '@lucide/vue'
 
+import BaseBadge from '@/components/shared/BaseBadge.vue'
 import BasePanel from '@/components/shared/BasePanel.vue'
 import LiveRegion from '@/components/shared/LiveRegion.vue'
 import ProgressMeter from '@/components/shared/ProgressMeter.vue'
+import { SENT_MAIL_LABEL } from '@/composables/stats/statsPresentation'
 import type { FilterPreviewDto, MessageSummaryDto } from '@/services/filtersService'
 import { formatCount } from '@/utils/formatNumber'
 import { formatDateTime } from '@/utils/formatDate'
@@ -64,9 +66,16 @@ const truncated = computed(
             {{ message.senderAddress }}
           </p>
           <div class="mt-1 flex flex-wrap items-center justify-between gap-2 text-sm">
-            <time class="font-mono tabular text-ink-muted" :datetime="message.receivedAtUtc">
-              {{ formatDateTime(message.receivedAtUtc) }}
-            </time>
+            <span class="inline-flex flex-wrap items-center gap-2">
+              <time class="font-mono tabular text-ink-muted" :datetime="message.receivedAtUtc">
+                {{ formatDateTime(message.receivedAtUtc) }}
+              </time>
+              <BaseBadge v-if="message.isSent" :label="SENT_MAIL_LABEL">
+                <template #icon
+                  ><Send :size="16" :stroke-width="1.75" aria-hidden="true"
+                /></template>
+              </BaseBadge>
+            </span>
             <button
               v-if="message.hasAttachments"
               type="button"

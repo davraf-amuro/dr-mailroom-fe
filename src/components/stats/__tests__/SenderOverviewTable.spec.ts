@@ -5,7 +5,7 @@ import SenderOverviewTable from '../SenderOverviewTable.vue'
 
 const markup = '<img src=x onerror=alert(1)><b>Fattura</b>'
 
-function mountTable() {
+function mountTable(sentCount = 0) {
   return mount(SenderOverviewTable, {
     props: {
       sortBy: 'MailCount',
@@ -15,6 +15,7 @@ function mountTable() {
           senderAddress: 'a@x.it',
           senderName: '<i>Nome</i>',
           mailCount: 1500,
+          sentCount,
           firstReceivedAtUtc: '2024-01-01T08:00:00',
           firstSubject: markup,
           lastReceivedAtUtc: '2026-01-01T08:00:00',
@@ -54,5 +55,19 @@ describe('SenderOverviewTable', () => {
     expect(wrapper.emitted('sort')).toEqual([['SenderAddress']])
     expect(wrapper.emitted('details')).toEqual([['a@x.it']])
     expect(wrapper.emitted('createFilter')).toEqual([['a@x.it']])
+  })
+})
+
+describe('SenderOverviewTable: posta inviata', () => {
+  it('nessuna inviata: nessun segno', () => {
+    expect(mountTable().text()).not.toContain('inviat')
+  })
+
+  it('tutte inviate: badge testuale "Posta inviata"', () => {
+    expect(mountTable(1500).find('tbody th').text()).toContain('Posta inviata')
+  })
+
+  it('in parte inviate: conteggio delle inviate', () => {
+    expect(mountTable(12).find('tbody th').text()).toContain('12 inviate')
   })
 })

@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import { FilterIcon } from '@lucide/vue'
+import { FilterIcon, Send } from '@lucide/vue'
 
+import BaseBadge from '@/components/shared/BaseBadge.vue'
 import BaseButton from '@/components/shared/BaseButton.vue'
 import BaseDialog from '@/components/shared/BaseDialog.vue'
 import ProgressMeter from '@/components/shared/ProgressMeter.vue'
@@ -13,6 +14,8 @@ const props = defineProps<{
   senderAddress: string | null
   years: YearStatDto[]
   state: LoadState
+  /** Segno di posta inviata del mittente ("Posta inviata" o "N inviate"); null se nessuna. */
+  sentLabel?: string | null
 }>()
 
 const open = defineModel<boolean>('open', { required: true })
@@ -37,6 +40,11 @@ function width(count: number | string): string {
         : (senderAddress ?? undefined)
     "
   >
+    <p v-if="sentLabel" class="mb-3">
+      <BaseBadge :label="sentLabel">
+        <template #icon><Send :size="16" :stroke-width="1.75" aria-hidden="true" /></template>
+      </BaseBadge>
+    </p>
     <ProgressMeter v-if="state === 'loading'" label="Lettura del dettaglio" />
     <p v-else-if="state === 'empty'" class="text-ink-muted">Nessuna mail da questo mittente.</p>
     <p v-else-if="state === 'error'" class="text-ink-muted">Dettaglio non disponibile.</p>

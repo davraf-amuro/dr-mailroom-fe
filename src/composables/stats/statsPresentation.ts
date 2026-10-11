@@ -6,6 +6,7 @@ import {
   type SenderOverviewSortBy,
   type SortDirection,
 } from '@/services/statsService'
+import { formatCount } from '@/utils/formatNumber'
 
 /** Nome della route Filtri (non importato da router/routes per non creare cicli di tipi). */
 const FILTERS_ROUTE_NAME = 'filters'
@@ -75,4 +76,29 @@ export function createFilterLocation(senderAddress: string): RouteLocationRaw {
 /** Anno scelto nella select: "" = tutti. */
 export function yearFromChoice(choice: string): number | undefined {
   return choice === '' ? undefined : Number(choice)
+}
+
+/** Etichetta della posta inviata: segnala, non esclude (conteggi e classifiche restano invariati). */
+export const SENT_MAIL_LABEL = 'Posta inviata'
+
+/** Conteggi di un mittente: mail totali e quante sono posta inviata (label SENT o indirizzo della casella). */
+export interface SentCounts {
+  mailCount: number | string
+  sentCount: number | string
+}
+
+/** True se il mittente ha posta inviata. */
+export function hasSentMail(row: SentCounts): boolean {
+  return Number(row.sentCount) > 0
+}
+
+/** True se tutte le mail del mittente sono posta inviata. */
+export function isAllSent(row: SentCounts): boolean {
+  return hasSentMail(row) && Number(row.sentCount) >= Number(row.mailCount)
+}
+
+/** Testo del segno: "Posta inviata" se lo sono tutte, "N inviate" se in parte, null se nessuna. */
+export function sentLabel(row: SentCounts): string | null {
+  if (!hasSentMail(row)) return null
+  return isAllSent(row) ? SENT_MAIL_LABEL : `${formatCount(Number(row.sentCount))} inviate`
 }

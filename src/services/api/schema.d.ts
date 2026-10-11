@@ -722,7 +722,7 @@ export interface components {
             emailAddress: string;
             status: components["schemas"]["MailboxStatus"];
         };
-        /** @description Messaggio indicizzato in forma ridotta (anteprima dei filtri). */
+        /** @description Messaggio indicizzato in forma ridotta (anteprima dei filtri); IsSent = posta inviata. */
         MessageSummaryDto: {
             /** Format: int64 */
             id: number | string;
@@ -733,6 +733,7 @@ export interface components {
             /** Format: date-time */
             receivedAtUtc: string;
             hasAttachments: boolean;
+            isSent: boolean;
         };
         ProblemDetails: {
             type?: null | string;
@@ -814,12 +815,14 @@ export interface components {
             /** Format: int32 */
             mailCount: number | string;
         };
-        /** @description Mittente (per indirizzo) con numero di mail, la più vecchia e la più recente (data e oggetto). */
+        /** @description Mittente (per indirizzo) con numero di mail, quante sono posta inviata, la più vecchia e la più recente (data e oggetto). */
         SenderOverviewDto: {
             senderAddress: string;
             senderName: null | string;
             /** Format: int32 */
             mailCount: number | string;
+            /** Format: int32 */
+            sentCount: number | string;
             /** Format: date-time */
             firstReceivedAtUtc: string;
             firstSubject: null | string;

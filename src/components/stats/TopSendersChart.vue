@@ -6,7 +6,9 @@ import { AriaComponent, GridComponent, TooltipComponent } from 'echarts/componen
 import { SVGRenderer } from 'echarts/renderers'
 import VChart from 'vue-echarts'
 import { useMediaQuery, usePreferredReducedMotion } from '@vueuse/core'
+import { Send } from '@lucide/vue'
 
+import BaseBadge from '@/components/shared/BaseBadge.vue'
 import { useTheme } from '@/composables/shared/useTheme'
 import {
   SENDER_LABEL_WIDTH,
@@ -14,6 +16,7 @@ import {
   topSendersOption,
   type ChartPalette,
 } from '@/composables/stats/topSendersOption'
+import { sentLabel } from '@/composables/stats/statsPresentation'
 import type { SenderOverviewDto } from '@/services/statsService'
 import { formatCount } from '@/utils/formatNumber'
 
@@ -36,6 +39,7 @@ function readPalette(): ChartPalette {
   const token = (name: string) => style.getPropertyValue(name).trim()
   return {
     bar: token('--c-federal'),
+    sent: token('--c-neutral'),
     text: token('--c-ink'),
     muted: token('--c-ink-muted'),
     line: token('--c-panel-line'),
@@ -53,6 +57,7 @@ const option = computed(() =>
     palette.value,
     motion.value === 'reduce',
     narrow.value ? SENDER_LABEL_WIDTH_NARROW : SENDER_LABEL_WIDTH,
+    !narrow.value,
   ),
 )
 const height = computed(() => `${Math.max(160, props.senders.length * 30 + 40)}px`)
@@ -109,6 +114,11 @@ function onClick(params: { name?: string }): void {
               >
                 {{ sender.senderAddress }}
               </button>
+              <BaseBadge v-if="sentLabel(sender)" :label="sentLabel(sender)!" class="ml-2">
+                <template #icon
+                  ><Send :size="16" :stroke-width="1.75" aria-hidden="true"
+                /></template>
+              </BaseBadge>
             </th>
             <td class="px-3 py-1 text-right font-mono tabular">
               {{ formatCount(Number(sender.mailCount)) }}

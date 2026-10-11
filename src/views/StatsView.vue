@@ -41,6 +41,7 @@ const {
   detailAddress,
   detailYears,
   detailState,
+  detailSentLabel,
   notice,
   clearNotice,
   reload,
@@ -185,6 +186,7 @@ const firstLoad = computed(() => loadState.value === 'loading' && rows.value.len
     :sender-address="detailAddress"
     :years="detailYears"
     :state="detailState"
+    :sent-label="detailSentLabel"
     @create-filter="createFilter"
   />
 </template>

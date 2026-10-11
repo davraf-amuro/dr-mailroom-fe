@@ -1,9 +1,11 @@
 <script setup lang="ts">
-import { ArrowDown, ArrowUp, ArrowUpDown, CalendarRange, FilterIcon } from '@lucide/vue'
+import { ArrowDown, ArrowUp, ArrowUpDown, CalendarRange, FilterIcon, Send } from '@lucide/vue'
 
+import BaseBadge from '@/components/shared/BaseBadge.vue'
 import BaseButton from '@/components/shared/BaseButton.vue'
 import {
   ariaSortOf,
+  sentLabel,
   sortColumns,
   subjectText,
   type SortColumn,
@@ -96,6 +98,9 @@ function ariaSort(column: SortColumn) {
             <span v-if="row.senderName" class="block text-sm text-ink-muted">{{
               row.senderName
             }}</span>
+            <BaseBadge v-if="sentLabel(row)" :label="sentLabel(row)!" class="mt-1">
+              <template #icon><Send :size="16" :stroke-width="1.75" aria-hidden="true" /></template>
+            </BaseBadge>
           </th>
           <td class="px-3 py-2 text-right font-mono tabular">
             {{ formatCount(Number(row.mailCount)) }}

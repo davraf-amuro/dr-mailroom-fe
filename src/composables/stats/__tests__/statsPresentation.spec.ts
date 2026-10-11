@@ -5,8 +5,11 @@ import { heroSentence } from '../useStatsView'
 import {
   ariaSortOf,
   createFilterLocation,
+  hasSentMail,
+  isAllSent,
   nextSort,
   pageCount,
+  sentLabel,
   subjectText,
   SUBJECT_MAX_CHARS,
 } from '../statsPresentation'
@@ -67,10 +70,39 @@ describe('frase della cella eroe', () => {
     })
   })
 
+  it('mittente più attivo che è la propria posta inviata: lo dice', () => {
+    expect(
+      heroSentence(1000, '', { senderAddress: 'me@x.it', mailCount: 300, sentCount: 300 }),
+    ).toEqual({
+      headline: '1.000 mail in archivio',
+      detail: 'Il mittente più attivo è la tua posta inviata, me@x.it: 300 mail (30%).',
+    })
+  })
+
   it('senza mail niente quota', () => {
     expect(heroSentence(0, '', undefined)).toEqual({
       headline: '0 mail in archivio',
       detail: null,
     })
+  })
+})
+
+describe('posta inviata', () => {
+  it('tutte inviate → "Posta inviata"', () => {
+    const row = { mailCount: 1128, sentCount: 1128 }
+    expect(hasSentMail(row)).toBe(true)
+    expect(isAllSent(row)).toBe(true)
+    expect(sentLabel(row)).toBe('Posta inviata')
+  })
+
+  it('in parte inviate → conteggio raggruppato', () => {
+    const row = { mailCount: 20000, sentCount: '1500' }
+    expect(isAllSent(row)).toBe(false)
+    expect(sentLabel(row)).toBe('1.500 inviate')
+  })
+
+  it('nessuna inviata → nessun segno', () => {
+    expect(hasSentMail({ mailCount: 3, sentCount: 0 })).toBe(false)
+    expect(sentLabel({ mailCount: 3, sentCount: 0 })).toBeNull()
   })
 })

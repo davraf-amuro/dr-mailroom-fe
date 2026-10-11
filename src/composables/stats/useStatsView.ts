@@ -6,22 +6,30 @@ import { watchDebounced } from '@vueuse/core'
 import type { SenderOverviewSortBy } from '@/services/statsService'
 import { useStatsStore } from '@/stores/stats'
 import { formatCount } from '@/utils/formatNumber'
-import { createFilterLocation, nextSort } from './statsPresentation'
+import { createFilterLocation, isAllSent, nextSort, sentLabel } from './statsPresentation'
 
 export const STATS_SEARCH_DEBOUNCE_MS = 300
 
-/** Frase-titolo della cella eroe: totale, anno e quota del mittente più attivo. */
+/** Frase-titolo della cella eroe: totale, anno e quota del mittente più attivo (segnalato se è la propria posta inviata). */
 export function heroSentence(
   mailTotal: number,
   year: string,
-  top: { senderAddress: string; mailCount: number | string } | undefined,
+  top:
+    { senderAddress: string; mailCount: number | string; sentCount?: number | string } | undefined,
 ): { headline: string; detail: string | null } {
   const headline = `${formatCount(mailTotal)} mail ${year === '' ? 'in archivio' : `nel ${year}`}`
   if (top === undefined || mailTotal <= 0) return { headline, detail: null }
   const share = Math.round((Number(top.mailCount) / mailTotal) * 100)
+  const count = formatCount(Number(top.mailCount))
+  if (isAllSent({ mailCount: top.mailCount, sentCount: top.sentCount ?? 0 })) {
+    return {
+      headline,
+      detail: `Il mittente più attivo è la tua posta inviata, ${top.senderAddress}: ${count} mail (${share}%).`,
+    }
+  }
   return {
     headline,
-    detail: `Il mittente più attivo, ${top.senderAddress}, ne ha scritte ${formatCount(Number(top.mailCount))} (${share}%).`,
+    detail: `Il mittente più attivo, ${top.senderAddress}, ne ha scritte ${count} (${share}%).`,
   }
 }
 
@@ -97,6 +105,12 @@ export function useStatsView() {
   })
 
   const hero = computed(() => heroSentence(mailTotal.value, year.value, top.value[0]))
+
+  /** Segno di posta inviata del mittente aperto nel dettaglio, dalla riga già letta (tabella o classifica). */
+  const detailSentLabel = computed(() => {
+    const row = [...rows.value, ...top.value].find((r) => r.senderAddress === detailAddress.value)
+    return row ? sentLabel(row) : null
+  })
   const filtered = computed(() => search.value.trim() !== '')
 
   onMounted(() => {
@@ -127,6 +141,7 @@ export function useStatsView() {
     detailAddress,
     detailYears,
     detailState,
+    detailSentLabel,
     notice,
     clearNotice: store.clearNotice,
     reload: store.loadOverview,
