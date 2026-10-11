@@ -1,5 +1,13 @@
 <script setup lang="ts">
-import { ArrowDown, ArrowUp, ArrowUpDown, CalendarRange, FilterIcon, Send } from '@lucide/vue'
+import {
+  ArrowDown,
+  ArrowUp,
+  ArrowUpDown,
+  CalendarRange,
+  FilterIcon,
+  Mails,
+  Send,
+} from '@lucide/vue'
 
 import BaseBadge from '@/components/shared/BaseBadge.vue'
 import BaseButton from '@/components/shared/BaseButton.vue'
@@ -28,6 +36,7 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   sort: [sortBy: SenderOverviewSortBy]
+  messages: [senderAddress: string]
   details: [senderAddress: string]
   createFilter: [senderAddress: string]
 }>()
@@ -123,6 +132,12 @@ function ariaSort(column: SortColumn) {
           </td>
           <td class="px-3 py-2">
             <div class="flex flex-wrap justify-end gap-1">
+              <BaseButton variant="ghost" @click="emit('messages', row.senderAddress)">
+                <template #icon
+                  ><Mails :size="20" :stroke-width="1.75" aria-hidden="true"
+                /></template>
+                Mail<span class="visually-hidden"> di {{ row.senderAddress }}</span>
+              </BaseButton>
               <BaseButton variant="ghost" @click="emit('details', row.senderAddress)">
                 <template #icon
                   ><CalendarRange :size="20" :stroke-width="1.75" aria-hidden="true"

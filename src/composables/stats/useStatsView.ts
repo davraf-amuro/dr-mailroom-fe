@@ -6,6 +6,7 @@ import { watchDebounced } from '@vueuse/core'
 import type { SenderOverviewSortBy } from '@/services/statsService'
 import { useStatsStore } from '@/stores/stats'
 import { formatCount } from '@/utils/formatNumber'
+import { senderMessagesLocation } from './senderMessagesPresentation'
 import { createFilterLocation, isAllSent, nextSort, sentLabel } from './statsPresentation'
 
 export const STATS_SEARCH_DEBOUNCE_MS = 300
@@ -87,10 +88,10 @@ export function useStatsView() {
     return store.setSort(target.sortBy, target.sortDir)
   }
 
-  /** Clic su una barra della classifica: la tabella cerca quel mittente. */
-  function focusSender(senderAddress: string): void {
-    searchText.value = senderAddress
-    void store.setSearch(senderAddress)
+  /** Barra della classifica o «Mail» nella tabella: griglia delle mail del mittente nella casella scelta. */
+  function openMessages(senderAddress: string): void {
+    if (mailboxId.value === '') return
+    void router.push(senderMessagesLocation(Number(mailboxId.value), senderAddress))
   }
 
   function createFilter(senderAddress: string): void {
@@ -150,7 +151,7 @@ export function useStatsView() {
     sort,
     setPage: store.setPage,
     openDetail: store.openDetail,
-    focusSender,
+    openMessages,
     createFilter,
   }
 }

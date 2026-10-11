@@ -46,13 +46,15 @@ describe('SenderOverviewTable', () => {
     expect(sorts).toEqual(['none', 'descending', 'none', 'none'])
   })
 
-  it('le azioni emettono indirizzo per ordinamento, dettaglio e "Crea filtro"', async () => {
+  it('le azioni emettono indirizzo per ordinamento, mail, dettaglio e "Crea filtro"', async () => {
     const wrapper = mountTable()
     await wrapper.findAll('thead button')[0]!.trigger('click')
     const buttons = wrapper.findAll('tbody button')
     await buttons[0]!.trigger('click')
     await buttons[1]!.trigger('click')
+    await buttons[2]!.trigger('click')
     expect(wrapper.emitted('sort')).toEqual([['SenderAddress']])
+    expect(wrapper.emitted('messages')).toEqual([['a@x.it']])
     expect(wrapper.emitted('details')).toEqual([['a@x.it']])
     expect(wrapper.emitted('createFilter')).toEqual([['a@x.it']])
   })

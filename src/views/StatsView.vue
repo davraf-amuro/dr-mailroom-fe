@@ -50,7 +50,7 @@ const {
   sort,
   setPage,
   openDetail,
-  focusSender,
+  openMessages,
   createFilter,
 } = useStatsView()
 
@@ -104,12 +104,10 @@ const firstLoad = computed(() => loadState.value === 'loading' && rows.value.len
         <h2 id="stats-top-title" class="font-condensed mt-1 text-2xl">
           I {{ top.length }} mittenti più attivi {{ period }}
         </h2>
-        <p class="text-sm text-ink-muted">
-          Seleziona una barra per cercare il mittente in tabella.
-        </p>
+        <p class="text-sm text-ink-muted">Seleziona una barra per vedere le mail del mittente.</p>
       </div>
       <div class="border border-panel-line bg-surface p-4">
-        <TopSendersChart :senders="top" :period="period" @select="focusSender" />
+        <TopSendersChart :senders="top" :period="period" @select="openMessages" />
       </div>
     </section>
 
@@ -165,6 +163,7 @@ const firstLoad = computed(() => loadState.value === 'loading' && rows.value.len
             :sort-dir="sortDir"
             :busy="loadState === 'loading'"
             @sort="sort"
+            @messages="openMessages"
             @details="openDetail"
             @create-filter="createFilter"
           />

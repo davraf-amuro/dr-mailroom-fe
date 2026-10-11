@@ -1,0 +1,147 @@
+<script setup lang="ts">
+import { computed, useId } from 'vue'
+import { RouterLink, useRoute } from 'vue-router'
+import { ArrowLeft, RefreshCw } from '@lucide/vue'
+
+import SenderMessagesTable from '@/components/stats/SenderMessagesTable.vue'
+import BaseButton from '@/components/shared/BaseButton.vue'
+import EmptyState from '@/components/shared/EmptyState.vue'
+import InlineNotice from '@/components/shared/InlineNotice.vue'
+import LiveRegion from '@/components/shared/LiveRegion.vue'
+import PageHeading from '@/components/shared/PageHeading.vue'
+import PaginationNav from '@/components/shared/PaginationNav.vue'
+import ProgressMeter from '@/components/shared/ProgressMeter.vue'
+import { useSenderMessages } from '@/composables/stats/useSenderMessages'
+import { STATS_ROUTE_NAME } from '@/router/routes/stats'
+import { formatCount } from '@/utils/formatNumber'
+
+const route = useRoute()
+const uid = useId()
+
+const {
+  state,
+  rows,
+  totalCount,
+  loadState,
+  searchText,
+  linkComplete,
+  pages,
+  filtered,
+  notice,
+  clearNotice,
+  reload,
+  setPage,
+  toggleSort,
+} = useSenderMessages()
+
+const firstLoad = computed(() => loadState.value === 'loading' && rows.value.length === 0)
+const countText = computed(() => {
+  const count = formatCount(totalCount.value)
+  return totalCount.value === 1 ? '1 mail' : `${count} mail`
+})
+const liveMessage = computed(() =>
+  loadState.value === 'ready' || loadState.value === 'empty' ? `${countText.value} trovate` : '',
+)
+</script>
+
+<template>
+  <PageHeading :title="route.meta.title" :overline="route.meta.overline">
+    <template #actions>
+      <RouterLink
+        :to="{ name: STATS_ROUTE_NAME }"
+        class="inline-flex min-h-11 items-center gap-2 rounded-full border border-control-border px-4 font-semibold"
+      >
+        <ArrowLeft :size="20" :stroke-width="1.75" aria-hidden="true" />
+        Torna alle statistiche
+      </RouterLink>
+    </template>
+  </PageHeading>
+
+  <InlineNotice
+    class="mb-4"
+    :tone="notice?.tone ?? null"
+    :text="notice?.text ?? null"
+    @dismiss="clearNotice()"
+  />
+  <LiveRegion :message="liveMessage" />
+
+  <EmptyState
+    v-if="!linkComplete"
+    title="Mittente non indicato"
+    description="Apri la griglia dalle statistiche: seleziona una barra del grafico o «Mail» nella tabella dei mittenti."
+  />
+
+  <section v-else aria-labelledby="sender-messages-title" class="space-y-4">
+    <div class="flex flex-wrap items-end justify-between gap-4">
+      <div class="min-w-0">
+        <p class="stencil text-sm text-ink-muted">Mittente</p>
+        <h2 id="sender-messages-title" class="font-condensed mt-1 text-2xl break-words">
+          {{ state.senderAddress }}
+        </h2>
+      </div>
+      <p v-if="loadState === 'ready'" class="font-mono tabular text-sm text-ink-muted">
+        {{ countText }}{{ filtered ? ' con questo oggetto' : '' }}
+      </p>
+    </div>
+
+    <form role="search" aria-label="Mail del mittente" class="max-w-xl" @submit.prevent>
+      <label :for="`${uid}-search`" class="block text-sm font-semibold">Oggetto</label>
+      <input
+        :id="`${uid}-search`"
+        v-model="searchText"
+        type="search"
+        autocomplete="off"
+        placeholder="Parte dell'oggetto, es. promozione"
+        class="mt-1 min-h-11 w-full rounded-full border border-control-border bg-surface px-4"
+      />
+    </form>
+
+    <ProgressMeter v-if="firstLoad" label="Lettura delle mail" class="max-w-md" />
+
+    <EmptyState
+      v-else-if="loadState === 'error' && rows.length === 0"
+      title="Mail non disponibili"
+      description="Il servizio non ha restituito i dati: controlla il banner in alto."
+    >
+      <template #actions>
+        <BaseButton variant="secondary" @click="reload()">
+          <template #icon
+            ><RefreshCw :size="20" :stroke-width="1.75" aria-hidden="true"
+          /></template>
+          Riprova
+        </BaseButton>
+      </template>
+    </EmptyState>
+
+    <EmptyState
+      v-else-if="loadState === 'empty' && filtered"
+      title="Nessuna mail con questo oggetto"
+      description="Cambia o cancella il testo cercato."
+    />
+    <EmptyState
+      v-else-if="loadState === 'empty'"
+      title="Nessuna mail da questo mittente"
+      description="In questa casella non risultano mail lette da questo indirizzo."
+    />
+
+    <template v-else>
+      <div class="border border-panel-line bg-surface">
+        <SenderMessagesTable
+          :rows="rows"
+          :sender-address="state.senderAddress"
+          :sort-dir="state.sortDir"
+          :busy="loadState === 'loading'"
+          @toggle-sort="toggleSort"
+        />
+      </div>
+      <PaginationNav
+        v-if="pages > 1"
+        :page="state.page"
+        :pages="pages"
+        label="Pagine delle mail del mittente"
+        :busy="loadState === 'loading'"
+        @change="setPage"
+      />
+    </template>
+  </section>
+</template>

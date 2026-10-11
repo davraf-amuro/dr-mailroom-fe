@@ -544,6 +544,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/messages": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Mail di un mittente in una casella
+         * @description Griglia delle mail di un mittente (mailboxId e senderAddress obbligatori, mittente confrontato per uguaglianza): oggetto, data di ricezione, label Gmail separate da virgola, presenza di allegati. Paginata (pageSize 1–100, default 25), ordinata per data (sortDir Asc|Desc, default Desc), ricerca facoltativa nell'oggetto. 404 se la casella non esiste; nessuna mail → 200 con totalCount 0.
+         */
+        get: operations["GetSenderMessageList"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/messages/{id}/attachments": {
         parameters: {
             query?: never;
@@ -805,6 +825,26 @@ export interface components {
          * @enum {unknown}
          */
         RunTrigger: "Scheduled" | "Manual" | "Reapply";
+        /** @description Riga della griglia delle mail di un mittente. Labels: id delle label Gmail separati da virgola (T2), come salvati. */
+        SenderMessageDto: {
+            /** Format: int64 */
+            id: number | string;
+            subject: null | string;
+            /** Format: date-time */
+            receivedAtUtc: string;
+            labels: null | string;
+            hasAttachments: boolean;
+        };
+        /** @description Pagina della griglia delle mail di un mittente, con il totale per la paginazione. */
+        SenderMessagePageDto: {
+            items: components["schemas"]["SenderMessageDto"][];
+            /** Format: int32 */
+            page: number | string;
+            /** Format: int32 */
+            pageSize: number | string;
+            /** Format: int32 */
+            totalCount: number | string;
+        };
         /** @description Mail di un mittente in un mese (YearMonth = yyyyMM; vista keyless: un solo DTO). */
         SenderMonthlyStatDto: {
             /** Format: int32 */
@@ -2522,6 +2562,73 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    GetSenderMessageList: {
+        parameters: {
+            query?: {
+                MailboxId?: number | string;
+                /** @description Indirizzo del mittente, confrontato per uguaglianza (salvato sempre minuscolo, D7). */
+                SenderAddress?: string;
+                /** @description Testo cercato nell'oggetto (contiene). */
+                Search?: string;
+                /** @description Verso dell'ordinamento per data di ricezione; default Desc (dalla più recente). */
+                SortDir?: components["schemas"]["SortDirection"];
+                /** @description Pagina da 1. */
+                Page?: number | string;
+                PageSize?: number | string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SenderMessagePageDto"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HttpValidationProblemDetails"];
+                };
             };
             /** @description Unauthorized */
             401: {
