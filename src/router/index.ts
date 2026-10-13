@@ -36,8 +36,49 @@ const router = createRouter({
   scrollBehavior: () => ({ top: 0 }),
 })
 
-router.afterEach((to) => {
+/** Testi con cui i browser segnalano un modulo dinamico non scaricabile (Chromium, Firefox, Safari). */
+const CHUNK_LOAD_ERRORS = [
+  'Failed to fetch dynamically imported module',
+  'error loading dynamically imported module',
+  'Importing a module script failed',
+]
+/** Chiave di sessione: ricorda la pagina già ricaricata, così un errore vero non diventa un ciclo. */
+const CHUNK_RELOAD_KEY = 'dr-mailroom:chunk-reload'
+
+function isChunkLoadError(error: unknown): boolean {
+  return error instanceof Error && CHUNK_LOAD_ERRORS.some((text) => error.message.includes(text))
+}
+
+function readReloadTarget(): string | null {
+  try {
+    return sessionStorage.getItem(CHUNK_RELOAD_KEY)
+  } catch {
+    return null
+  }
+}
+
+function writeReloadTarget(target: string | null): void {
+  try {
+    if (target === null) sessionStorage.removeItem(CHUNK_RELOAD_KEY)
+    else sessionStorage.setItem(CHUNK_RELOAD_KEY, target)
+  } catch {
+    // Storage non disponibile: si rinuncia solo alla protezione dal ciclo.
+  }
+}
+
+// Dopo un nuovo deploy o un riavvio di Vite il tab aperto chiede file che non esistono più:
+// la navigazione fallirebbe in silenzio. Si ricarica la pagina chiesta, una volta sola.
+router.onError((error, to) => {
+  if (!isChunkLoadError(error)) return
+  const target = router.resolve(to.fullPath).href
+  if (readReloadTarget() === target) return
+  writeReloadTarget(target)
+  window.location.assign(target)
+})
+
+router.afterEach((to, _from, failure) => {
   document.title = `${to.meta.title} · ${APP_NAME}`
+  if (!failure) writeReloadTarget(null)
 })
 
 export default router
