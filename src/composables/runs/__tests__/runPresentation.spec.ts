@@ -51,6 +51,20 @@ describe('origine del giro', () => {
     ).toBe('Riapplica · Filtro 9')
   })
 
+  it('cestino di un mittente: etichetta e indirizzo', () => {
+    expect(
+      runOriginText(
+        {
+          trigger: 'TrashSender',
+          filterId: null,
+          requestedProcesses: null,
+          senderAddress: 'no-reply@spam.example',
+        },
+        names,
+      ),
+    ).toBe('Cestino mittente · no-reply@spam.example')
+  })
+
   it('processo sconosciuto: il nome come arriva', () => {
     expect(requestedProcessesText('Alert, Nuovo')).toBe('Allerta, Nuovo')
   })

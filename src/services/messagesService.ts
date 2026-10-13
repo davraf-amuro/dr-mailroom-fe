@@ -7,6 +7,7 @@ export type AttachmentDto = components['schemas']['AttachmentDto']
 export type MessageId = components['schemas']['MessageSummaryDto']['id']
 export type SenderMessageDto = components['schemas']['SenderMessageDto']
 export type SenderMessagePageDto = components['schemas']['SenderMessagePageDto']
+export type TrashSenderStartedDto = components['schemas']['TrashSenderStartedDto']
 
 export interface SenderMessageQuery {
   mailboxId: number
@@ -35,6 +36,19 @@ export function listSenderMessages(
 ): Promise<ApiOutcome<SenderMessagePageDto>> {
   return callApi('resource', (api) =>
     api.GET('/api/v1/messages', { params: { query: toSenderMessageParams(query) } }),
+  )
+}
+
+/**
+ * "Elimina tutte": avvia il giro che sposta nel cestino di Gmail le mail ricevute dal mittente (202, `accepted`).
+ * 409 se il cestino non è autorizzato, non c'è nulla da cestinare o la casella è occupata.
+ */
+export function trashSender(
+  mailboxId: number,
+  senderAddress: string,
+): Promise<ApiOutcome<TrashSenderStartedDto>> {
+  return callApi('resource', (api) =>
+    api.POST('/api/v1/messages/trash-sender', { body: { mailboxId, senderAddress } }),
   )
 }
 

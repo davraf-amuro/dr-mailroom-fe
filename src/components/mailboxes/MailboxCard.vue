@@ -12,9 +12,9 @@ import {
   backfillState,
   currentRunText,
   lastErrorContext,
+  lastRunText,
 } from '@/composables/mailboxes/mailboxPresentation'
 import { MailboxStatusValue, type MailboxDto } from '@/services/mailboxesService'
-import { formatDateTime } from '@/utils/formatDate'
 import { formatSerial } from '@/utils/formatSerial'
 import MailboxActions from './MailboxActions.vue'
 import MailboxStatusBadge from './MailboxStatusBadge.vue'
@@ -104,7 +104,7 @@ const titleId = computed(() => `mailbox-${props.mailbox.id}-title`)
       </div>
       <div>
         <dt class="stencil text-xs text-ink-muted">Ultimo giro concluso</dt>
-        <dd class="mt-1 font-mono tabular">{{ formatDateTime(mailbox.lastRunAtUtc, 'Mai') }}</dd>
+        <dd class="mt-1 font-mono tabular">{{ lastRunText(mailbox) }}</dd>
       </div>
       <div v-if="mailbox.lastError">
         <dt class="stencil text-xs text-ink-muted">Ultimo errore</dt>

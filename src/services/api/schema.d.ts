@@ -148,6 +148,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/mailboxes/{id}/trash-authorization": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * URL di autorizzazione del cestino
+         * @description URL della pagina di consenso Google con scope gmail.modify, usato solo per spostare mail nel cestino (D-T1 bis); la lettura resta gmail.readonly con il suo token. sender (facoltativo) è la vista del mittente a cui tornare. Google torna sul callback, che salva il token solo se l'account è quello della casella. 404 se non esiste, 409 se non è attiva.
+         */
+        get: operations["GetMailboxTrashAuthorizationUrl"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/mailboxes/{id}/pause": {
         parameters: {
             query?: never;
@@ -564,6 +584,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/messages/trash-sender": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Sposta nel cestino tutte le mail di un mittente
+         * @description "Elimina tutte": avvia un giro (trigger TrashSender) che sposta nel cestino di Gmail le mail ricevute dal mittente nella casella e non ancora cestinate, a blocchi da 1.000 (batchModify con label TRASH). Usa il token del cestino (scope gmail.modify, D-T1 bis): la lettura resta in sola lettura. Le mail restano recuperabili da Gmail per 30 giorni; in dr-mailroom spariscono da elenchi e statistiche e il DB le elimina dopo la ritenzione configurata. 404 se la casella non esiste; 409 se non è attiva, il cestino non è autorizzato (GET /mailboxes/{id}/trash-authorization), non c'è nulla da cestinare o la casella ha già un giro in corso. L'avanzamento si segue con GET /runs/{runId}.
+         */
+        post: operations["PostTrashSender"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/messages/{id}/attachments": {
         parameters: {
             query?: never;
@@ -700,7 +740,8 @@ export interface components {
         };
         /**
          * @description Casella con stato, collegamento e avanzamento del backfill: MessagesIndexed su MessagesTotal (totale Gmail, approssimato),
-         *     giro in corso (null se nessuno) e giro che ha prodotto LastError.
+         *     giro in corso (null se nessuno), mail lette nell'ultimo giro concluso, giro che ha prodotto LastError e cestino
+         *     autorizzato (D-T1 bis: secondo token gmail.modify presente).
          */
         MailboxDto: {
             /** Format: int32 */
@@ -717,9 +758,12 @@ export interface components {
             currentRun: null | components["schemas"]["MailboxRunDto"];
             /** Format: date-time */
             lastRunAtUtc: null | string;
+            /** Format: int32 */
+            lastRunMessagesRead: null | number | string;
             lastError: null | string;
             /** Format: int64 */
             lastErrorRunId: null | number | string;
+            trashAuthorized: boolean;
         };
         /** @description Giro in corso su una casella, con le mail lette finora (aggiornate a fine pagina). */
         MailboxRunDto: {
@@ -772,7 +816,7 @@ export interface components {
         ReapplyRequest: {
             processes: null | string[];
         };
-        /** @description Giro completo con contatori ed esito. */
+        /** @description Giro completo con contatori ed esito; SenderAddress solo per il cestino di un mittente (TrashSender). */
         RunDto: {
             /** Format: int64 */
             id: number | string;
@@ -782,6 +826,7 @@ export interface components {
             /** Format: int32 */
             filterId: null | number | string;
             requestedProcesses: null | string;
+            senderAddress: null | string;
             status: components["schemas"]["RunStatus"];
             /** Format: date-time */
             startedAtUtc: string;
@@ -821,10 +866,10 @@ export interface components {
             startedAtUtc: string;
         };
         /**
-         * @description Origine di un giro: cron, richiesta manuale o riapplica di un filtro.
+         * @description Origine di un giro: cron, richiesta manuale, riapplica di un filtro o cestino di un mittente.
          * @enum {unknown}
          */
-        RunTrigger: "Scheduled" | "Manual" | "Reapply";
+        RunTrigger: "Scheduled" | "Manual" | "Reapply" | "TrashSender";
         /** @description Riga della griglia delle mail di un mittente. Labels: id delle label Gmail separati da virgola (T2), come salvati. */
         SenderMessageDto: {
             /** Format: int64 */
@@ -899,6 +944,19 @@ export interface components {
         };
         /** @enum {unknown} */
         SubjectMatchType: "StartsWith" | "Contains" | "Regex" | null;
+        /** @description Body di "Elimina tutte": la casella e il mittente le cui mail ricevute vanno nel cestino di Gmail (D-T1 bis). */
+        TrashSenderRequest: {
+            /** Format: int32 */
+            mailboxId: null | number | string;
+            senderAddress: null | string;
+        };
+        /** @description Giro di cestino avviato: Id del giro da seguire e mail che sposterà nel cestino. */
+        TrashSenderStartedDto: {
+            /** Format: int64 */
+            runId: number | string;
+            /** Format: int32 */
+            messagesToTrash: number | string;
+        };
         /** @description Mail ricevute in un anno. */
         YearStatDto: {
             /** Format: int32 */
@@ -1244,6 +1302,66 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+        };
+    };
+    GetMailboxTrashAuthorizationUrl: {
+        parameters: {
+            query?: {
+                sender?: string;
+            };
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ConnectUrlDto"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
             };
         };
     };
@@ -2650,6 +2768,75 @@ export interface operations {
             };
             /** @description Not Found */
             404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    PostTrashSender: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TrashSenderRequest"];
+            };
+        };
+        responses: {
+            /** @description Accepted */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TrashSenderStartedDto"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HttpValidationProblemDetails"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Conflict */
+            409: {
                 headers: {
                     [name: string]: unknown;
                 };

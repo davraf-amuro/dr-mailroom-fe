@@ -32,8 +32,8 @@ const emit = defineEmits<{ connect: [] }>()
         </svg>
       </template>
       <p class="max-w-prose">
-        Collega una casella Gmail: dr-mailroom la legge in <strong>sola lettura</strong>, non
-        modifica né cancella nulla.
+        Collega una casella Gmail: dr-mailroom la legge in <strong>sola lettura</strong> e non
+        modifica nulla. Sposta mail nel cestino solo quando lo chiedi tu, con un permesso a parte.
       </p>
       <p class="max-w-prose text-sm text-ink-muted">
         Il primo giro legge tutto lo storico della casella e può richiedere molto tempo.

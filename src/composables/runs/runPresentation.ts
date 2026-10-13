@@ -32,6 +32,7 @@ export const runTriggerLabels: Record<RunTrigger, string> = {
   [RunTriggerValue.Scheduled]: 'Schedulato',
   [RunTriggerValue.Manual]: 'Manuale',
   [RunTriggerValue.Reapply]: 'Riapplica',
+  [RunTriggerValue.TrashSender]: 'Cestino mittente',
 }
 
 export const runStatusOptions = (Object.keys(runStatusPresentation) as RunStatus[]).map(
@@ -63,12 +64,19 @@ export function requestedProcessesText(requested: string | null): string {
     .join(', ')
 }
 
-/** Origine leggibile: "Riapplica · Fatture · Allegati" per i giri di riapplica. */
+/**
+ * Origine leggibile: "Riapplica · Fatture · Allegati" per i giri di riapplica,
+ * "Cestino mittente · indirizzo" per quelli di cestino.
+ */
 export function runOriginText(
-  run: Pick<RunDto, 'trigger' | 'filterId' | 'requestedProcesses'>,
+  run: Pick<RunDto, 'trigger' | 'filterId' | 'requestedProcesses'> &
+    Partial<Pick<RunDto, 'senderAddress'>>,
   filterNames: Map<string, string>,
 ): string {
   const label = runTriggerLabels[run.trigger]
+  if (run.trigger === RunTriggerValue.TrashSender) {
+    return run.senderAddress ? `${label} · ${run.senderAddress}` : label
+  }
   if (run.trigger !== RunTriggerValue.Reapply) return label
   const parts = [label]
   if (run.filterId !== null) {

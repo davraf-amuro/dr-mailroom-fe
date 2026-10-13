@@ -60,6 +60,18 @@ export function currentRunText(run: NonNullable<MailboxDto['currentRun']>): stri
   return `Giro ${run.id} · dal ${formatDateTime(run.startedAtUtc)} · ${formatCount(Number(run.messagesRead))} mail lette in questo giro`
 }
 
+/** Ultimo giro concluso: "13 ott 2026, 20:45 · 1.234 mail lette"; "Mai" se non ce n'è; solo la data senza conteggio. */
+export function lastRunText(
+  mailbox: Pick<MailboxDto, 'lastRunAtUtc' | 'lastRunMessagesRead'>,
+): string {
+  const when = formatDateTime(mailbox.lastRunAtUtc, 'Mai')
+  // ?? null: un'API precedente al campo lo omette (undefined), si mostra la sola data
+  const read = mailbox.lastRunMessagesRead ?? null
+  if (mailbox.lastRunAtUtc === null || read === null) return when
+  // Spazi non separabili: se la riga è stretta va a capo intero "1.234 mail lette", non a metà
+  return `${when} · ${formatCount(Number(read))} mail lette`
+}
+
 /** Contesto dell'ultimo errore: giro (se noto) e data dell'ultimo giro concluso, che è quello che l'ha registrato. */
 export function lastErrorContext(
   mailbox: Pick<MailboxDto, 'lastErrorRunId' | 'lastRunAtUtc'>,

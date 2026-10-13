@@ -5,6 +5,7 @@ import {
   backfillProgress,
   currentRunText,
   lastErrorContext,
+  lastRunText,
 } from '../mailboxPresentation'
 
 describe('backfillProgress', () => {
@@ -54,5 +55,22 @@ describe('currentRunText', () => {
   it('riporta numero del giro e mail lette', () => {
     const text = currentRunText({ id: 9, startedAtUtc: '2026-10-09T17:30:00Z', messagesRead: 1500 })
     expect(text).toMatch(/^Giro 9 · dal .+ · 1\.500 mail lette in questo giro$/)
+  })
+})
+
+describe('lastRunText', () => {
+  it('data e conteggio → "data · N mail lette"', () => {
+    const text = lastRunText({ lastRunAtUtc: '2026-10-13T18:45:00Z', lastRunMessagesRead: 1234 })
+    expect(text).toMatch(/2026.* · 1\.234 mail lette$/)
+  })
+
+  it('nessun giro concluso → "Mai"', () => {
+    expect(lastRunText({ lastRunAtUtc: null, lastRunMessagesRead: null })).toBe('Mai')
+  })
+
+  it('conteggio assente → solo la data', () => {
+    const text = lastRunText({ lastRunAtUtc: '2026-10-13T18:45:00Z', lastRunMessagesRead: null })
+    expect(text).toContain('2026')
+    expect(text).not.toContain('mail lette')
   })
 })

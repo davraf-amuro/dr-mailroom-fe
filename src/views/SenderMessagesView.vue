@@ -1,17 +1,25 @@
 <script setup lang="ts">
 import { computed, useId } from 'vue'
 import { RouterLink, useRoute } from 'vue-router'
-import { ArrowLeft, RefreshCw } from '@lucide/vue'
+import { ArrowLeft, RefreshCw, Trash2 } from '@lucide/vue'
 
 import SenderMessagesTable from '@/components/stats/SenderMessagesTable.vue'
 import BaseButton from '@/components/shared/BaseButton.vue'
+import ConfirmDialog from '@/components/shared/ConfirmDialog.vue'
 import EmptyState from '@/components/shared/EmptyState.vue'
 import InlineNotice from '@/components/shared/InlineNotice.vue'
 import LiveRegion from '@/components/shared/LiveRegion.vue'
 import PageHeading from '@/components/shared/PageHeading.vue'
 import PaginationNav from '@/components/shared/PaginationNav.vue'
 import ProgressMeter from '@/components/shared/ProgressMeter.vue'
+import { useOAuthReturn } from '@/composables/mailboxes/useOAuthReturn'
+import {
+  TrashMessages,
+  readTrashOAuthReturn,
+  trashConfirmDescription,
+} from '@/composables/stats/trashPresentation'
 import { useSenderMessages } from '@/composables/stats/useSenderMessages'
+import { useTrashSender } from '@/composables/stats/useTrashSender'
 import { STATS_ROUTE_NAME } from '@/router/routes/stats'
 import { formatCount } from '@/utils/formatNumber'
 
@@ -28,6 +36,7 @@ const {
   pages,
   filtered,
   notice,
+  showNotice,
   clearNotice,
   reload,
   setPage,
@@ -42,6 +51,25 @@ const countText = computed(() => {
 const liveMessage = computed(() =>
   loadState.value === 'ready' || loadState.value === 'empty' ? `${countText.value} trovate` : '',
 )
+
+// "Elimina tutte": casella e mittente della vista; l'avviso dice quante mail andranno nel cestino.
+const trashTarget = computed(() => ({
+  mailboxId: state.value.mailboxId,
+  senderAddress: state.value.senderAddress,
+}))
+const trash = useTrashSender(trashTarget, { onNotice: (n) => showNotice(n.tone, n.text) })
+const {
+  confirmOpen: trashConfirmOpen,
+  authorizeOpen: trashAuthorizeOpen,
+  phase: trashPhase,
+} = trash
+// Il pulsante serve solo con mail da cestinare in elenco (senza ricerca: "tutte" vale per tutto il mittente).
+const canTrash = computed(
+  () => loadState.value === 'ready' && totalCount.value > 0 && !trash.busy.value,
+)
+
+// Ritorno dal consenso Google del cestino: esito nell'avviso, query string ripulita.
+useOAuthReturn((n) => showNotice(n.tone, n.text), readTrashOAuthReturn)
 </script>
 
 <template>
@@ -79,9 +107,15 @@ const liveMessage = computed(() =>
           {{ state.senderAddress }}
         </h2>
       </div>
-      <p v-if="loadState === 'ready'" class="font-mono tabular text-sm text-ink-muted">
-        {{ countText }}{{ filtered ? ' con questo oggetto' : '' }}
-      </p>
+      <div class="flex flex-wrap items-center gap-3">
+        <p v-if="loadState === 'ready'" class="font-mono tabular text-sm text-ink-muted">
+          {{ countText }}{{ filtered ? ' con questo oggetto' : '' }}
+        </p>
+        <BaseButton variant="danger-ghost" :disabled="!canTrash" @click="trash.request()">
+          <template #icon><Trash2 :size="20" :stroke-width="1.75" aria-hidden="true" /></template>
+          {{ TrashMessages.button }}
+        </BaseButton>
+      </div>
     </div>
 
     <form role="search" aria-label="Mail del mittente" class="max-w-xl" @submit.prevent>
@@ -144,4 +178,22 @@ const liveMessage = computed(() =>
       />
     </template>
   </section>
+
+  <ConfirmDialog
+    v-model:open="trashConfirmOpen"
+    tone="danger"
+    :title="TrashMessages.confirmTitle"
+    :description="trashConfirmDescription(state.senderAddress)"
+    :confirm-label="TrashMessages.confirmLabel"
+    :busy="trashPhase === 'checking' || trashPhase === 'starting'"
+    @confirm="trash.confirm()"
+  />
+  <ConfirmDialog
+    v-model:open="trashAuthorizeOpen"
+    :title="TrashMessages.authorizeTitle"
+    :description="TrashMessages.authorizeDescription"
+    :confirm-label="TrashMessages.authorizeLabel"
+    :busy="trashPhase === 'checking'"
+    @confirm="trash.authorize()"
+  />
 </template>

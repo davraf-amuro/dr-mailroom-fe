@@ -21,6 +21,8 @@ function mailbox(overrides: Partial<MailboxDto> = {}): MailboxDto {
     messagesIndexed: 0,
     currentRun: null,
     lastRunAtUtc: null,
+    lastRunMessagesRead: null,
+    trashAuthorized: false,
     lastError: null,
     lastErrorRunId: null,
     ...overrides,

@@ -3,7 +3,7 @@ import { useRoute, useRouter, type LocationQuery } from 'vue-router'
 
 import type { Notice } from '@/composables/shared/useNotice'
 
-/** Parametri con cui il backend riporta il browser su /mailboxes dopo Google. */
+/** Parametri con cui il backend riporta il browser dopo Google (su /mailboxes o sulla vista del mittente). */
 export const OAUTH_QUERY = { result: 'oauth', reason: 'reason' } as const
 
 /** Tabella "reason" della specifica, "Collegare una casella Gmail". */
@@ -22,7 +22,8 @@ const reasonMessages: Record<string, string> = {
   exchange_failed: OAuthReturnMessages.exchangeFailed,
 }
 
-function readParam(query: LocationQuery, key: string): string | null {
+/** Primo valore non vuoto di un parametro di query, altrimenti null. */
+export function readParam(query: LocationQuery, key: string): string | null {
   const value = query[key]
   const first = Array.isArray(value) ? value[0] : value
   return typeof first === 'string' && first !== '' ? first : null
@@ -42,13 +43,17 @@ export function readOAuthReturn(query: LocationQuery): Notice | null {
 /**
  * Al caricamento della vista legge `oauth` e `reason`, passa l'esito a `onResult`
  * e pulisce la query string (così un ricaricamento non ripete il messaggio).
+ * `read` traduce l'esito: il collegamento di una casella usa `readOAuthReturn`, il cestino i suoi testi.
  */
-export function useOAuthReturn(onResult: (notice: Notice) => void): void {
+export function useOAuthReturn(
+  onResult: (notice: Notice) => void,
+  read: (query: LocationQuery) => Notice | null = readOAuthReturn,
+): void {
   const route = useRoute()
   const router = useRouter()
 
   onMounted(() => {
-    const notice = readOAuthReturn(route.query)
+    const notice = read(route.query)
     if (notice === null) return
     onResult(notice)
     const query = { ...route.query }

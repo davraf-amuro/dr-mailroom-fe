@@ -39,8 +39,8 @@ const parts = computed(() => {
           </template>
         </h2>
         <p class="mt-2 max-w-prose text-sm text-ink-muted">
-          dr-mailroom legge le caselle in <strong>sola lettura</strong>: non modifica né cancella
-          nulla.
+          dr-mailroom legge le caselle in <strong>sola lettura</strong>: sposta mail nel cestino
+          solo quando lo chiedi tu, con «Elimina tutte».
         </p>
       </div>
       <BaseButton :busy="connecting" @click="emit('connect')">

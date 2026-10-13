@@ -10,9 +10,9 @@ import {
   backfillState,
   currentRunText,
   lastErrorContext,
+  lastRunText,
 } from '@/composables/mailboxes/mailboxPresentation'
 import type { MailboxDto } from '@/services/mailboxesService'
-import { formatDateTime } from '@/utils/formatDate'
 import { formatSerial } from '@/utils/formatSerial'
 import MailboxStatusBadge from './MailboxStatusBadge.vue'
 
@@ -51,7 +51,7 @@ const title = computed(() => props.mailbox?.emailAddress ?? 'Dettaglio casella')
         <dd class="tabular">{{ currentRunText(mailbox.currentRun) }}</dd>
       </template>
       <dt class="stencil text-xs text-ink-muted">Ultimo giro concluso</dt>
-      <dd class="font-mono tabular">{{ formatDateTime(mailbox.lastRunAtUtc, 'Mai') }}</dd>
+      <dd class="font-mono tabular">{{ lastRunText(mailbox) }}</dd>
       <dt class="stencil text-xs text-ink-muted">Ultimo errore</dt>
       <!-- Testo completo: nelle card e in tabella è troncato -->
       <dd class="break-words" :class="mailbox.lastError ? 'text-alert' : 'text-ink-muted'">

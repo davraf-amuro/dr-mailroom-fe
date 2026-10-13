@@ -52,6 +52,21 @@ export function getConnectUrl(): Promise<ApiOutcome<components['schemas']['Conne
   return callApi('resource', (api) => api.GET('/api/v1/mailboxes/connect'))
 }
 
+/**
+ * URL del consenso Google per il cestino della casella (scope gmail.modify, separato dalla lettura).
+ * `sender` è la vista del mittente a cui Google riporta il browser.
+ */
+export function getTrashAuthorizationUrl(
+  id: MailboxId,
+  sender: string,
+): Promise<ApiOutcome<components['schemas']['ConnectUrlDto']>> {
+  return callApi('resource', (api) =>
+    api.GET('/api/v1/mailboxes/{id}/trash-authorization', {
+      params: { path: { id: Number(id) }, query: { sender } },
+    }),
+  )
+}
+
 export function pauseMailbox(id: MailboxId): Promise<ApiOutcome<unknown>> {
   return callApi('resource', (api) =>
     api.POST('/api/v1/mailboxes/{id}/pause', { params: { path: { id: Number(id) } } }),

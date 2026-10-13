@@ -132,6 +132,7 @@ export function useSenderMessages() {
     pages,
     filtered,
     notice,
+    showNotice,
     clearNotice,
     reload: load,
     setPage,

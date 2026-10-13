@@ -13,6 +13,8 @@ const MAILBOX = {
   messagesIndexed: 120,
   currentRun: null,
   lastRunAtUtc: '2026-10-10T08:00:00Z',
+  lastRunMessagesRead: 120,
+  trashAuthorized: false,
   lastError: null,
   lastErrorRunId: null,
 }

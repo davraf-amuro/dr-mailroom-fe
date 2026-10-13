@@ -24,6 +24,7 @@ export const RunTriggerValue = {
   Scheduled: 'Scheduled',
   Manual: 'Manual',
   Reapply: 'Reapply',
+  TrashSender: 'TrashSender',
 } as const satisfies Record<RunTrigger, RunTrigger>
 
 export interface RunListFilter {
