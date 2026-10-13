@@ -1,4 +1,7 @@
+import { format } from 'echarts/core'
+
 import type { SenderOverviewDto } from '@/services/statsService'
+import { formatDateTime } from '@/utils/formatDate'
 import { formatCount } from '@/utils/formatNumber'
 import { hasSentMail, sentLabel } from './statsPresentation'
 
@@ -48,7 +51,16 @@ export function topSendersOption(
       backgroundColor: palette.surface,
       borderColor: palette.line,
       textStyle: { color: palette.text },
-      valueFormatter: (value: unknown) => `${formatCount(Number(value))} mail`,
+      // Il tooltip è HTML: l'indirizzo arriva dalle mail lette e va escapato
+      formatter: (params: { dataIndex: number }) => {
+        const sender = senders[params.dataIndex]
+        if (!sender) return ''
+        return [
+          `<strong>${format.encodeHTML(sender.senderAddress)}</strong>`,
+          `${formatCount(Number(sender.mailCount))} mail`,
+          `Ultima: ${formatDateTime(sender.lastReceivedAtUtc)}`,
+        ].join('<br/>')
+      },
     },
     xAxis: {
       type: 'value',
