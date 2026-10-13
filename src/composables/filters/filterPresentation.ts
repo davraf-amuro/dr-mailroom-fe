@@ -30,12 +30,14 @@ export const subjectValuePlaceholders: Record<keyof typeof SubjectMatchTypeValue
 export const processLabels: Record<ProcessType, string> = {
   AttachmentExtraction: 'Estrai allegati',
   Alert: 'Crea allerta',
+  ContentArchive: 'Salva contenuto',
 }
 
 /** Forma breve per i badge dell'elenco (specifica: "Allegati", "Allerta"). */
 export const processBadgeLabels: Record<ProcessType, string> = {
   AttachmentExtraction: 'Allegati',
   Alert: 'Allerta',
+  ContentArchive: 'Contenuto',
 }
 
 export interface SubjectCondition {
@@ -71,5 +73,7 @@ export function filterSentence(filter: FilterDto, mailbox: string): string {
     actions.push(`estrai gli allegati in ${filter.attachmentSubfolder ?? ''}`.trim())
   }
   if (hasProcess(filter, ProcessTypeValue.Alert)) actions.push("crea un'allerta")
+  if (hasProcess(filter, ProcessTypeValue.ContentArchive))
+    actions.push('salva il contenuto della mail')
   return `${parts.join(' ')}: ${actions.join(' e ')}`
 }

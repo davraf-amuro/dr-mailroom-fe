@@ -5,9 +5,9 @@ Frontend di [dr-mailroom](https://github.com/davraf-amuro/dr-mailroom), il servi
 Le viste:
 
 - **Caselle**: collegamento a Gmail, avanzamento del primo giro, pausa e ripresa, rimozione
-- **Filtri**: costruttore di regole su mittente e oggetto, anteprima sulle mail già lette, riapplica allo storico
+- **Filtri**: costruttore di regole su mittente e oggetto, anteprima sulle mail già lette, riapplica allo storico, elenco delle mail di un filtro con testo leggibile e download del contenuto salvato (.eml o .txt)
 - **Esecuzioni**: «Esegui ora», giri in corso con avanzamento e annullamento, cronologia
-- **Statistiche**: mittenti più attivi, panoramica paginata per mittente e griglia delle mail di un mittente
+- **Statistiche**: mittenti più attivi, panoramica paginata per mittente e griglia delle mail di un mittente, «Elimina tutte» nel cestino di Gmail con una data «fino al» facoltativa
 - **Banner di stato**: database o servizio non raggiungibili, chiave API rifiutata
 
 Cosa deve fare il frontend è descritto nella [specifica](https://github.com/davraf-amuro/dr-mailroom/blob/main/docs/frontend-specifiche.md) del backend. La direzione visiva, i token e il lessico sono in [design.md](https://github.com/davraf-amuro/dr-mailroom/blob/main/.ai/plans/2026-10-08-dr-mailroom-fe/design.md).
@@ -20,4 +20,4 @@ Cosa deve fare il frontend è descritto nella [specifica](https://github.com/dav
 | [docs/container.md](docs/container.md) | Immagine nginx, pubblicazione dietro `nginx-proxy`, CORS e rischio della chiave API in una SPA |
 
 ---
-*Documento aggiornato: Ottobre 2026 — Revisione v1.0 — 2026-10-11 — claude-opus-5-5*
+*Documento aggiornato: Ottobre 2026 — Revisione v1.1 — 2026-10-13 — claude-opus-5-5*

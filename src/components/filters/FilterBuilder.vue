@@ -41,6 +41,7 @@ const ids = {
   subfolder: `${uid}-subfolder`,
   subfolderHint: `${uid}-subfolder-hint`,
   alert: `${uid}-alert`,
+  archive: `${uid}-archive`,
   enabled: `${uid}-enabled`,
   processes: `${uid}-processes`,
 }
@@ -283,12 +284,24 @@ const controlClass =
               Estrai allegati
             </label>
           </div>
-          <div v-if="form.extractAttachments" class="control">
+          <div class="control">
+            <label class="check" :for="ids.alert">
+              <input :id="ids.alert" v-model="form.createAlert" type="checkbox" />
+              Crea un'allerta
+            </label>
+          </div>
+          <div class="control">
+            <label class="check" :for="ids.archive">
+              <input :id="ids.archive" v-model="form.archiveContent" type="checkbox" />
+              Salva il contenuto della mail
+            </label>
+          </div>
+          <div v-if="form.extractAttachments || form.archiveContent" class="control">
             <label
               :for="ids.subfolder"
               :class="mode === 'phrase' ? 'visually-hidden' : 'block text-sm font-semibold'"
             >
-              Sottocartella degli allegati
+              Sottocartella
             </label>
             <div class="flex items-center gap-2">
               <span v-if="mode === 'phrase'" class="lead stencil" aria-hidden="true">in</span>
@@ -311,19 +324,14 @@ const controlClass =
               />
             </div>
             <p :id="ids.subfolderHint" class="mt-1 text-sm text-ink-muted">
-              Sottocartella dentro la cartella allegati del server (es. fornitore o fatture/2026).
-              Niente lettera di unità né «..».
+              Sottocartella dentro la cartella allegati del server (es. fornitore o fatture/2026),
+              dove finiscono allegati e contenuto. Obbligatoria per gli allegati, facoltativa per il
+              solo contenuto. Niente lettera di unità né «..».
             </p>
             <FieldError
               :id="`${ids.subfolder}-error`"
               :messages="messagesOf(FilterField.attachmentSubfolder)"
             />
-          </div>
-          <div class="control">
-            <label class="check" :for="ids.alert">
-              <input :id="ids.alert" v-model="form.createAlert" type="checkbox" />
-              Crea un'allerta
-            </label>
           </div>
           <FieldError
             :id="`${ids.processes}-error`"

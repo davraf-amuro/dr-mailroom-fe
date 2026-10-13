@@ -44,7 +44,8 @@ export const FilterErrorMessages = {
   subjectTypeMissing: "Scegli come confrontare l'oggetto oppure togli il testo.",
   subjectValueMissing: "Scrivi il testo da cercare nell'oggetto.",
   subjectValueTooLong: `Il testo può avere al massimo ${FILTER_LIMITS.subjectValueMax} caratteri.`,
-  processesMissing: "Scegli almeno un'azione: estrarre gli allegati o creare un'allerta.",
+  processesMissing:
+    "Scegli almeno un'azione: estrarre gli allegati, creare un'allerta o salvare il contenuto.",
   subfolderMissing: 'Indica la cartella in cui salvare gli allegati.',
   subfolderTooLong: `La cartella può avere al massimo ${FILTER_LIMITS.subfolderMax} caratteri.`,
   subfolderInvalid:
@@ -64,6 +65,8 @@ export interface FilterFormState {
   extractAttachments: boolean
   attachmentSubfolder: string
   createAlert: boolean
+  /** Processo ContentArchive: salva il .eml della mail, scaricabile dalla tabella del filtro. */
+  archiveContent: boolean
   isEnabled: boolean
 }
 
@@ -77,6 +80,7 @@ export function emptyFilterForm(): FilterFormState {
     extractAttachments: true,
     attachmentSubfolder: '',
     createAlert: false,
+    archiveContent: false,
     isEnabled: true,
   }
 }
@@ -92,6 +96,7 @@ export function formFromFilter(filter: FilterDto): FilterFormState {
     extractAttachments: processes.includes(ProcessTypeValue.AttachmentExtraction),
     attachmentSubfolder: filter.attachmentSubfolder ?? '',
     createAlert: processes.includes(ProcessTypeValue.Alert),
+    archiveContent: processes.includes(ProcessTypeValue.ContentArchive),
     isEnabled: filter.isEnabled,
   }
 }
@@ -149,11 +154,13 @@ function validateSender(form: FilterFormState, errors: FieldErrors): void {
     fail(FilterField.senderAddress, FilterErrorMessages.senderInvalid, errors)
 }
 
-function validateSubfolder(form: FilterFormState, errors: FieldErrors): void {
+/** Sottocartella: obbligatoria con l'estrazione allegati, facoltativa con il solo salvataggio del contenuto. */
+function validateSubfolder(form: FilterFormState, errors: FieldErrors, required: boolean): void {
   const folder = form.attachmentSubfolder.trim()
-  if (folder === '')
-    fail(FilterField.attachmentSubfolder, FilterErrorMessages.subfolderMissing, errors)
-  else if (folder.length > FILTER_LIMITS.subfolderMax)
+  if (folder === '') {
+    if (required)
+      fail(FilterField.attachmentSubfolder, FilterErrorMessages.subfolderMissing, errors)
+  } else if (folder.length > FILTER_LIMITS.subfolderMax)
     fail(FilterField.attachmentSubfolder, FilterErrorMessages.subfolderTooLong, errors)
   else if (!isRelativeSubfolder(folder))
     fail(FilterField.attachmentSubfolder, FilterErrorMessages.subfolderInvalid, errors)
@@ -170,10 +177,10 @@ export function validateFilterForm(form: FilterFormState): FieldErrors {
   validateSender(form, errors)
   validateSubject(form, errors)
 
-  if (!form.extractAttachments && !form.createAlert) {
+  if (!form.extractAttachments && !form.createAlert && !form.archiveContent) {
     fail(FilterField.processes, FilterErrorMessages.processesMissing, errors)
   }
-  if (form.extractAttachments) validateSubfolder(form, errors)
+  if (usesSubfolder(form)) validateSubfolder(form, errors, form.extractAttachments)
   return errors
 }
 
@@ -185,10 +192,16 @@ export function validatePreviewForm(form: FilterFormState): FieldErrors {
   return errors
 }
 
+/** Allegati estratti e contenuto salvato finiscono nella stessa sottocartella del filtro. */
+export function usesSubfolder(form: FilterFormState): boolean {
+  return form.extractAttachments || form.archiveContent
+}
+
 function selectedProcesses(form: FilterFormState): ProcessType[] {
   const processes: ProcessType[] = []
   if (form.extractAttachments) processes.push(ProcessTypeValue.AttachmentExtraction)
   if (form.createAlert) processes.push(ProcessTypeValue.Alert)
+  if (form.archiveContent) processes.push(ProcessTypeValue.ContentArchive)
   return processes
 }
 
@@ -198,7 +211,7 @@ function mailboxIdOf(form: FilterFormState): number | null {
 
 /**
  * Body di POST/PUT. Con "Nessuna condizione" tipo e valore vanno omessi (null);
- * la sottocartella viaggia solo se si estraggono gli allegati.
+ * la sottocartella viaggia solo se si estraggono gli allegati o si salva il contenuto (vuota = cartella principale).
  */
 export function buildFilterRequest(form: FilterFormState): FilterRequest {
   const hasSubject = form.subjectMatchType !== ''
@@ -208,7 +221,7 @@ export function buildFilterRequest(form: FilterFormState): FilterRequest {
     mailboxId: mailboxIdOf(form),
     subjectMatchType: hasSubject ? form.subjectMatchType : null,
     subjectValue: hasSubject ? form.subjectValue.trim() : null,
-    attachmentSubfolder: form.extractAttachments ? form.attachmentSubfolder.trim() : null,
+    attachmentSubfolder: usesSubfolder(form) ? form.attachmentSubfolder.trim() || null : null,
     isEnabled: form.isEnabled,
     processes: selectedProcesses(form),
   }

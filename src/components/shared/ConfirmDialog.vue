@@ -43,6 +43,8 @@ const emit = defineEmits<{ confirm: [] }>()
         <div class="space-y-4 p-6">
           <AlertDialogTitle class="text-xl">{{ title }}</AlertDialogTitle>
           <AlertDialogDescription class="text-ink-muted">{{ description }}</AlertDialogDescription>
+          <!-- Controlli facoltativi della conferma (es. una data limite) -->
+          <slot />
           <div class="flex flex-wrap justify-end gap-3 pt-2">
             <AlertDialogCancel as-child>
               <BaseButton variant="secondary" :disabled="busy">{{ cancelLabel }}</BaseButton>

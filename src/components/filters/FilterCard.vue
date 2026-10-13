@@ -1,6 +1,17 @@
 <script setup lang="ts">
 import { computed, useId } from 'vue'
-import { Bell, CircleCheck, CirclePause, History, Paperclip, Pencil, Trash2 } from '@lucide/vue'
+import { RouterLink } from 'vue-router'
+import {
+  Archive,
+  Bell,
+  CircleCheck,
+  CirclePause,
+  History,
+  Mails,
+  Paperclip,
+  Pencil,
+  Trash2,
+} from '@lucide/vue'
 
 import BaseBadge from '@/components/shared/BaseBadge.vue'
 import BaseButton from '@/components/shared/BaseButton.vue'
@@ -10,6 +21,7 @@ import {
   hasProcess,
   subjectCondition,
 } from '@/composables/filters/filterPresentation'
+import { FILTER_MESSAGES_ROUTE_NAME } from '@/router/routes/filters'
 import { ProcessTypeValue, type FilterDto } from '@/services/filtersService'
 
 const props = defineProps<{
@@ -25,6 +37,10 @@ const titleId = useId()
 const subject = computed(() => subjectCondition(props.filter))
 const extracts = computed(() => hasProcess(props.filter, ProcessTypeValue.AttachmentExtraction))
 const alerts = computed(() => hasProcess(props.filter, ProcessTypeValue.Alert))
+const archives = computed(() => hasProcess(props.filter, ProcessTypeValue.ContentArchive))
+const actionCount = computed(
+  () => [extracts.value, alerts.value, archives.value].filter(Boolean).length,
+)
 const sentence = computed(() => filterSentence(props.filter, props.mailbox))
 </script>
 
@@ -63,6 +79,8 @@ const sentence = computed(() => filterSentence(props.filter, props.mailbox))
       </template>
       <template v-if="extracts && alerts"> e </template>
       <template v-if="alerts">crea un'allerta</template>
+      <template v-if="archives && actionCount > 1"> e </template>
+      <template v-if="archives">salva il contenuto della mail</template>
     </p>
 
     <ul class="mt-3 flex flex-wrap gap-2" aria-label="Processi del filtro">
@@ -78,9 +96,22 @@ const sentence = computed(() => filterSentence(props.filter, props.mailbox))
           <template #icon><Bell :size="16" :stroke-width="1.75" aria-hidden="true" /></template>
         </BaseBadge>
       </li>
+      <li v-if="archives">
+        <BaseBadge label="Contenuto" tone="neutral">
+          <template #icon><Archive :size="16" :stroke-width="1.75" aria-hidden="true" /></template>
+        </BaseBadge>
+      </li>
     </ul>
 
     <div class="mt-4 flex flex-wrap gap-2">
+      <RouterLink
+        :to="{ name: FILTER_MESSAGES_ROUTE_NAME, params: { id: String(filter.id) } }"
+        :aria-label="`Vedi le mail di ${filter.name}`"
+        class="inline-flex min-h-11 items-center gap-2 rounded-full border border-control-border px-4 font-semibold"
+      >
+        <Mails :size="20" :stroke-width="1.75" aria-hidden="true" />
+        Vedi mail
+      </RouterLink>
       <BaseButton
         variant="secondary"
         :aria-label="`Modifica ${filter.name}`"

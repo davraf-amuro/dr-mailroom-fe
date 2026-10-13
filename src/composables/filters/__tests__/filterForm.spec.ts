@@ -155,6 +155,43 @@ describe('validateFilterForm (regole D15)', () => {
     }
   })
 
+  it('il solo salvataggio del contenuto basta come processo; la sottocartella è facoltativa', () => {
+    const form = validForm({
+      extractAttachments: false,
+      archiveContent: true,
+      attachmentSubfolder: '',
+    })
+    expect(validateFilterForm(form)).toEqual({})
+    expect(buildFilterRequest(form)).toMatchObject({
+      processes: ['ContentArchive'],
+      attachmentSubfolder: null,
+    })
+  })
+
+  it('con il salvataggio del contenuto una sottocartella indicata si controlla e viaggia', () => {
+    const form = validForm({ extractAttachments: false, archiveContent: true })
+    expect(buildFilterRequest(form).attachmentSubfolder).toBe('fatture')
+    expect(
+      validateFilterForm({ ...form, attachmentSubfolder: '../fuori' }).attachmentSubfolder,
+    ).toEqual([FilterErrorMessages.subfolderInvalid])
+  })
+
+  it('formFromFilter legge il processo ContentArchive', () => {
+    const form = formFromFilter({
+      id: 1,
+      mailboxId: null,
+      name: 'Sconti',
+      senderAddress: 'promo@negozio.it',
+      subjectMatchType: null,
+      subjectValue: null,
+      attachmentSubfolder: null,
+      isEnabled: true,
+      processes: ['ContentArchive'],
+    })
+    expect(form.archiveContent).toBe(true)
+    expect(form.extractAttachments).toBe(false)
+  })
+
   it('serve almeno un processo', () => {
     const errors = validateFilterForm(validForm({ extractAttachments: false, createAlert: false }))
     expect(errors.processes).toEqual([FilterErrorMessages.processesMissing])

@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { effectScope, ref } from 'vue'
+import { effectScope, nextTick, ref } from 'vue'
 
 import type { Notice } from '@/composables/shared/useNotice'
 import * as mailboxes from '@/services/mailboxesService'
@@ -16,6 +16,7 @@ vi.mock('@/services/mailboxesService', async (importOriginal) => ({
 vi.mock('@/services/messagesService', async (importOriginal) => ({
   ...(await importOriginal<typeof import('@/services/messagesService')>()),
   trashSender: vi.fn<typeof messages.trashSender>(),
+  listSenderMessages: vi.fn<typeof messages.listSenderMessages>(),
 }))
 
 const SENDER = 'no-reply@spam.example'
@@ -93,7 +94,7 @@ describe('useTrashSender', () => {
     trash.request()
     await trash.confirm()
 
-    expect(messages.trashSender).toHaveBeenCalledWith(1, SENDER)
+    expect(messages.trashSender).toHaveBeenCalledWith(1, SENDER, null)
     expect(trash.confirmOpen.value).toBe(false)
     expect(trash.phase.value).toBe('idle')
     expect(notices).toEqual([
@@ -104,6 +105,49 @@ describe('useTrashSender', () => {
           'Dal cestino le recuperi in Gmail per 30 giorni.',
       },
     ])
+    scope.stop()
+  })
+
+  it('con una data → conta le mail fino al giorno compreso e passa l’inizio del giorno dopo', async () => {
+    vi.mocked(messages.listSenderMessages).mockResolvedValue({
+      kind: 'ok',
+      data: { items: [], page: 1, pageSize: 1, totalCount: 2 },
+    })
+    vi.mocked(mailboxes.getMailbox).mockResolvedValue({ kind: 'ok', data: mailbox(true) })
+    vi.mocked(messages.trashSender).mockResolvedValue({
+      kind: 'accepted',
+      data: { runId: 43, messagesToTrash: 2 },
+    })
+    const { trash, notices, scope } = setup()
+    const before = new Date(2026, 0, 2).toISOString()
+
+    trash.request()
+    trash.untilDate.value = '2026-01-01'
+    await nextTick()
+    await vi.waitFor(() => expect(trash.untilCount.value).toBe(2))
+
+    expect(messages.listSenderMessages).toHaveBeenLastCalledWith(
+      expect.objectContaining({ mailboxId: 1, senderAddress: SENDER, receivedBeforeUtc: before }),
+    )
+    expect(trash.untilLabel.value).toBe('1 gennaio 2026')
+
+    await trash.confirm()
+
+    expect(messages.trashSender).toHaveBeenCalledWith(1, SENDER, before)
+    expect(notices[0]?.text).toContain('ricevute fino al 1 gennaio 2026')
+    scope.stop()
+  })
+
+  it('riaprendo la conferma la data torna vuota', async () => {
+    const { trash, scope } = setup()
+
+    trash.request()
+    trash.untilDate.value = '2026-01-01'
+    trash.confirmOpen.value = false
+    trash.request()
+
+    expect(trash.untilDate.value).toBe('')
+    expect(trash.untilCount.value).toBeNull()
     scope.stop()
   })
 

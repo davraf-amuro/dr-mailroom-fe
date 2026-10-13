@@ -280,6 +280,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/filters/{id}/messages": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Mail di un filtro
+         * @description Mail già indicizzate e non cestinate che corrispondono al filtro (stesso confronto dell'anteprima, anche se il filtro è sospeso). Paginata (pageSize 1–100, default 25), ordinata per data di ricezione (sortDir Asc|Desc, default Desc). Ogni riga dice se il contenuto è archiviato (isArchived, processo ContentArchive); missingArchiveCount conta le mail senza contenuto su tutte le pagine, hasContentArchive dice se il filtro ha il processo e quindi se la riapplica può archiviarle. 404 se il filtro non esiste; nessuna mail → 200 con totalCount 0.
+         */
+        get: operations["GetFilterMessageList"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/filters/preview": {
         parameters: {
             query?: never;
@@ -573,7 +593,7 @@ export interface paths {
         };
         /**
          * Mail di un mittente in una casella
-         * @description Griglia delle mail di un mittente (mailboxId e senderAddress obbligatori, mittente confrontato per uguaglianza): oggetto, data di ricezione, label Gmail separate da virgola, presenza di allegati. Paginata (pageSize 1–100, default 25), ordinata per data (sortDir Asc|Desc, default Desc), ricerca facoltativa nell'oggetto. 404 se la casella non esiste; nessuna mail → 200 con totalCount 0.
+         * @description Griglia delle mail di un mittente (mailboxId e senderAddress obbligatori, mittente confrontato per uguaglianza): oggetto, data di ricezione, label Gmail separate da virgola, presenza di allegati. Paginata (pageSize 1–100, default 25), ordinata per data (sortDir Asc|Desc, default Desc), ricerca facoltativa nell'oggetto, receivedBeforeUtc facoltativo (solo le mail ricevute prima di quell'istante, estremo escluso: il conteggio di "Elimina tutte" fino a una data). 404 se la casella non esiste; nessuna mail → 200 con totalCount 0.
          */
         get: operations["GetSenderMessageList"];
         put?: never;
@@ -595,7 +615,7 @@ export interface paths {
         put?: never;
         /**
          * Sposta nel cestino tutte le mail di un mittente
-         * @description "Elimina tutte": avvia un giro (trigger TrashSender) che sposta nel cestino di Gmail le mail ricevute dal mittente nella casella e non ancora cestinate, a blocchi da 1.000 (batchModify con label TRASH). Usa il token del cestino (scope gmail.modify, D-T1 bis): la lettura resta in sola lettura. Le mail restano recuperabili da Gmail per 30 giorni; in dr-mailroom spariscono da elenchi e statistiche e il DB le elimina dopo la ritenzione configurata. 404 se la casella non esiste; 409 se non è attiva, il cestino non è autorizzato (GET /mailboxes/{id}/trash-authorization), non c'è nulla da cestinare o la casella ha già un giro in corso. L'avanzamento si segue con GET /runs/{runId}.
+         * @description "Elimina tutte": avvia un giro (trigger TrashSender) che sposta nel cestino di Gmail le mail ricevute dal mittente nella casella e non ancora cestinate (con receivedBeforeUtc facoltativo solo quelle ricevute prima di quell'istante, estremo escluso: per "fino al giorno X compreso" il client invia l'inizio del giorno dopo), a blocchi da 1.000 (batchModify con label TRASH). Usa il token del cestino (scope gmail.modify, D-T1 bis): la lettura resta in sola lettura. Le mail restano recuperabili da Gmail per 30 giorni; in dr-mailroom spariscono da elenchi e statistiche e il DB le elimina dopo la ritenzione configurata. 404 se la casella non esiste; 409 se non è attiva, il cestino non è autorizzato (GET /mailboxes/{id}/trash-authorization), non c'è nulla da cestinare o la casella ha già un giro in corso. L'avanzamento si segue con GET /runs/{runId}.
          */
         post: operations["PostTrashSender"];
         delete?: never;
@@ -616,6 +636,26 @@ export interface paths {
          * @description Allegati estratti dalla mail con percorso relativo e SHA-256. 404 se la mail non esiste o non ha allegati salvati.
          */
         get: operations["GetMessageAttachmentList"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/messages/{id}/content": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Contenuto archiviato di una mail
+         * @description Scarica il contenuto salvato dal processo ContentArchive: format=eml restituisce il messaggio originale (application/octet-stream, in streaming dal disco), format=txt il testo leggibile ricavato dal .eml (text/plain UTF-8: intestazioni Da/Oggetto/Data, poi il corpo text/plain o l'HTML convertito). Sempre Content-Disposition attachment e X-Content-Type-Options nosniff. 400 se format manca o non è valido; 404 se la mail non esiste, è cestinata, non ha contenuto archiviato o il file non è più sul disco; 409 se il .eml non è leggibile.
+         */
+        get: operations["GetMessageContent"];
         put?: never;
         post?: never;
         delete?: never;
@@ -692,6 +732,34 @@ export interface components {
             attachmentSubfolder: null | string;
             isEnabled: boolean;
             processes: components["schemas"]["ProcessType"][];
+        };
+        /** @description Riga della tabella delle mail di un filtro; IsArchived = contenuto salvato, scaricabile da GET /messages/{id}/content. */
+        FilterMessageDto: {
+            /** Format: int64 */
+            id: number | string;
+            /** Format: int32 */
+            mailboxId: number | string;
+            subject: null | string;
+            /** Format: date-time */
+            receivedAtUtc: string;
+            hasAttachments: boolean;
+            isArchived: boolean;
+        };
+        /**
+         * @description Pagina delle mail di un filtro. MissingArchiveCount: mail corrispondenti senza contenuto salvato (su tutte le pagine);
+         *     HasContentArchive: il filtro prevede il processo ContentArchive, quindi la riapplica può archiviarle.
+         */
+        FilterMessagePageDto: {
+            items: components["schemas"]["FilterMessageDto"][];
+            /** Format: int32 */
+            page: number | string;
+            /** Format: int32 */
+            pageSize: number | string;
+            /** Format: int32 */
+            totalCount: number | string;
+            /** Format: int32 */
+            missingArchiveCount: number | string;
+            hasContentArchive: boolean;
         };
         /** @description Esito dell'anteprima: totale delle corrispondenze e le più recenti. */
         FilterPreviewDto: {
@@ -811,12 +879,15 @@ export interface components {
          * @description Processo di lavorazione applicabile a una mail filtrata.
          * @enum {unknown}
          */
-        ProcessType: "AttachmentExtraction" | "Alert";
+        ProcessType: "AttachmentExtraction" | "Alert" | "ContentArchive";
         /** @description Body della riapplica: sottoinsieme dei processi del filtro; null = tutti (D13). */
         ReapplyRequest: {
             processes: null | string[];
         };
-        /** @description Giro completo con contatori ed esito; SenderAddress solo per il cestino di un mittente (TrashSender). */
+        /**
+         * @description Giro completo con contatori ed esito; SenderAddress e TrashReceivedBeforeUtc (estremo escluso, null = tutte) solo per
+         *     il cestino di un mittente (TrashSender).
+         */
         RunDto: {
             /** Format: int64 */
             id: number | string;
@@ -839,6 +910,8 @@ export interface components {
             /** Format: int32 */
             errorCount: number | string;
             errorSummary: null | string;
+            /** Format: date-time */
+            trashReceivedBeforeUtc: null | string;
         };
         /** @description Giri per cui è stato chiesto l'annullamento: si chiudono Cancelled appena il lavoro in corso si ferma. */
         RunsCancelledDto: {
@@ -944,11 +1017,16 @@ export interface components {
         };
         /** @enum {unknown} */
         SubjectMatchType: "StartsWith" | "Contains" | "Regex" | null;
-        /** @description Body di "Elimina tutte": la casella e il mittente le cui mail ricevute vanno nel cestino di Gmail (D-T1 bis). */
+        /**
+         * @description Body di "Elimina tutte": la casella e il mittente le cui mail ricevute vanno nel cestino di Gmail (D-T1 bis).
+         *     ReceivedBeforeUtc facoltativo, estremo escluso: solo le mail ricevute prima di quell'istante; null = tutte.
+         */
         TrashSenderRequest: {
             /** Format: int32 */
             mailboxId: null | number | string;
             senderAddress: null | string;
+            /** Format: date-time */
+            receivedBeforeUtc?: null | string;
         };
         /** @description Giro di cestino avviato: Id del giro da seguire e mail che sposterà nel cestino. */
         TrashSenderStartedDto: {
@@ -1824,6 +1902,70 @@ export interface operations {
             };
             /** @description Conflict */
             409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    GetFilterMessageList: {
+        parameters: {
+            query?: {
+                /** @description Verso dell'ordinamento per data di ricezione; default Desc (dalla più recente). */
+                SortDir?: components["schemas"]["SortDirection"];
+                /** @description Pagina da 1. */
+                Page?: number | string;
+                PageSize?: number | string;
+            };
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FilterMessagePageDto"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HttpValidationProblemDetails"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Not Found */
+            404: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -2718,6 +2860,8 @@ export interface operations {
                 SenderAddress?: string;
                 /** @description Testo cercato nell'oggetto (contiene). */
                 Search?: string;
+                /** @description Solo le mail ricevute prima di questo istante UTC (estremo escluso): conteggio di "Elimina tutte" fino a una data. */
+                ReceivedBeforeUtc?: string;
                 /** @description Verso dell'ordinamento per data di ricezione; default Desc (dalla più recente). */
                 SortDir?: components["schemas"]["SortDirection"];
                 /** @description Pagina da 1. */
@@ -2886,6 +3030,73 @@ export interface operations {
             };
             /** @description Not Found */
             404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    GetMessageContent: {
+        parameters: {
+            query?: {
+                Format?: string;
+            };
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HttpValidationProblemDetails"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Conflict */
+            409: {
                 headers: {
                     [name: string]: unknown;
                 };

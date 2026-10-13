@@ -1,9 +1,15 @@
-import { computed, ref, type Ref } from 'vue'
+import { computed, ref, watch, type Ref } from 'vue'
 
 import type { Notice } from '@/composables/shared/useNotice'
-import { TrashMessages, trashStartedText } from '@/composables/stats/trashPresentation'
+import {
+  TrashMessages,
+  endOfLocalDayExclusiveUtc,
+  trashStartedText,
+  untilDateLabel,
+} from '@/composables/stats/trashPresentation'
 import { getMailbox, getTrashAuthorizationUrl } from '@/services/mailboxesService'
-import { trashSender } from '@/services/messagesService'
+import { listSenderMessages, trashSender } from '@/services/messagesService'
+import { SortDirectionValue } from '@/services/statsService'
 
 /** Casella e mittente su cui agisce "Elimina tutte". */
 export interface TrashTarget {
@@ -43,6 +49,33 @@ export function useTrashSender(target: Ref<TrashTarget>, options: UseTrashSender
 
   const busy = computed(() => phase.value !== 'idle')
 
+  /** Giorno "fino al" del campo data (yyyy-mm-dd, ora locale); "" = tutte le mail. */
+  const untilDate = ref('')
+  /** Mail fino al giorno scelto, contate dal server; null = nessuna data o conteggio non disponibile. */
+  const untilCount = ref<number | null>(null)
+  const receivedBeforeUtc = computed(() => endOfLocalDayExclusiveUtc(untilDate.value))
+  const untilLabel = computed(() => untilDateLabel(untilDate.value))
+
+  // Con la conferma aperta, ogni data scelta aggiorna il conteggio; le risposte superate si scartano.
+  let countRequest = 0
+  watch([untilDate, confirmOpen], async () => {
+    const id = ++countRequest
+    const mailboxId = target.value.mailboxId
+    const before = receivedBeforeUtc.value
+    untilCount.value = null
+    if (!confirmOpen.value || mailboxId === null || before === null) return
+    const outcome = await listSenderMessages({
+      mailboxId,
+      senderAddress: target.value.senderAddress,
+      receivedBeforeUtc: before,
+      sortDir: SortDirectionValue.Desc,
+      page: 1,
+      pageSize: 1,
+    })
+    if (id !== countRequest) return
+    untilCount.value = outcome.kind === 'ok' ? Number(outcome.data.totalCount) : null
+  })
+
   function report(kind: string, text: string, detail: string | null = null): void {
     if (isGlobalAlarm(kind)) return
     options.onNotice({ tone: kind === 'conflict' ? 'warning' : 'error', text: detail ?? text })
@@ -51,6 +84,7 @@ export function useTrashSender(target: Ref<TrashTarget>, options: UseTrashSender
   /** Primo passo: apre la conferma. */
   function request(): void {
     if (busy.value || target.value.mailboxId === null) return
+    untilDate.value = ''
     confirmOpen.value = true
   }
 
@@ -93,7 +127,11 @@ export function useTrashSender(target: Ref<TrashTarget>, options: UseTrashSender
   /** Avvio del giro: a richiesta accettata basta dire quante mail andranno nel cestino. */
   async function start(mailboxId: number): Promise<void> {
     phase.value = 'starting'
-    const outcome = await trashSender(mailboxId, target.value.senderAddress)
+    const outcome = await trashSender(
+      mailboxId,
+      target.value.senderAddress,
+      receivedBeforeUtc.value,
+    )
     confirmOpen.value = false
     phase.value = 'idle'
     if (outcome.kind !== 'accepted' && outcome.kind !== 'ok') {
@@ -102,9 +140,24 @@ export function useTrashSender(target: Ref<TrashTarget>, options: UseTrashSender
     }
     options.onNotice({
       tone: 'ok',
-      text: trashStartedText(Number(outcome.data.messagesToTrash), target.value.senderAddress),
+      text: trashStartedText(
+        Number(outcome.data.messagesToTrash),
+        target.value.senderAddress,
+        untilLabel.value,
+      ),
     })
   }
 
-  return { confirmOpen, authorizeOpen, phase, busy, request, confirm, authorize }
+  return {
+    confirmOpen,
+    authorizeOpen,
+    phase,
+    busy,
+    untilDate,
+    untilCount,
+    untilLabel,
+    request,
+    confirm,
+    authorize,
+  }
 }

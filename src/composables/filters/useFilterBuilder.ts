@@ -30,6 +30,7 @@ const errorKeyOf: Record<keyof FilterFormState, string> = {
   subjectValue: FilterField.subjectValue,
   extractAttachments: FilterField.processes,
   createAlert: FilterField.processes,
+  archiveContent: FilterField.processes,
   attachmentSubfolder: FilterField.attachmentSubfolder,
   isEnabled: FilterField.isEnabled,
 }

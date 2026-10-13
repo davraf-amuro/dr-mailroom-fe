@@ -44,6 +44,7 @@ function run(overrides: Partial<RunDto> = {}): RunDto {
     messagesProcessed: 0,
     errorCount: 0,
     errorSummary: null,
+    trashReceivedBeforeUtc: null,
     ...overrides,
   }
 }

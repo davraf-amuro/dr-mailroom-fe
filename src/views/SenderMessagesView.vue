@@ -62,7 +62,13 @@ const {
   confirmOpen: trashConfirmOpen,
   authorizeOpen: trashAuthorizeOpen,
   phase: trashPhase,
+  untilDate: trashUntilDate,
+  untilCount: trashUntilCount,
+  untilLabel: trashUntilLabel,
 } = trash
+const trashDescription = computed(() =>
+  trashConfirmDescription(state.value.senderAddress, trashUntilLabel.value, trashUntilCount.value),
+)
 // Il pulsante serve solo con mail da cestinare in elenco (senza ricerca: "tutte" vale per tutto il mittente).
 const canTrash = computed(
   () => loadState.value === 'ready' && totalCount.value > 0 && !trash.busy.value,
@@ -183,11 +189,27 @@ useOAuthReturn((n) => showNotice(n.tone, n.text), readTrashOAuthReturn)
     v-model:open="trashConfirmOpen"
     tone="danger"
     :title="TrashMessages.confirmTitle"
-    :description="trashConfirmDescription(state.senderAddress)"
+    :description="trashDescription"
     :confirm-label="TrashMessages.confirmLabel"
     :busy="trashPhase === 'checking' || trashPhase === 'starting'"
     @confirm="trash.confirm()"
-  />
+  >
+    <div>
+      <label :for="`${uid}-trash-until`" class="block text-sm font-semibold">
+        {{ TrashMessages.untilLabel }}
+      </label>
+      <input
+        :id="`${uid}-trash-until`"
+        v-model="trashUntilDate"
+        type="date"
+        :aria-describedby="`${uid}-trash-until-hint`"
+        class="mt-1 min-h-11 rounded-full border border-control-border bg-surface px-4"
+      />
+      <p :id="`${uid}-trash-until-hint`" class="mt-1 text-sm text-ink-muted">
+        {{ TrashMessages.untilHint }}
+      </p>
+    </div>
+  </ConfirmDialog>
   <ConfirmDialog
     v-model:open="trashAuthorizeOpen"
     :title="TrashMessages.authorizeTitle"

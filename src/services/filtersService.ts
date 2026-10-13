@@ -1,6 +1,7 @@
 import { callApi } from './api/client'
 import type { ApiOutcome } from './api/problem'
 import type { components } from './api/schema'
+import type { SortDirection } from './statsService'
 
 export type FilterDto = components['schemas']['FilterDto']
 export type FilterId = FilterDto['id']
@@ -12,6 +13,8 @@ export type MessageSummaryDto = components['schemas']['MessageSummaryDto']
 export type ReapplyRequest = components['schemas']['ReapplyRequest']
 export type RunsStartedDto = components['schemas']['RunsStartedDto']
 export type ProcessType = components['schemas']['ProcessType']
+export type FilterMessageDto = components['schemas']['FilterMessageDto']
+export type FilterMessagePageDto = components['schemas']['FilterMessagePageDto']
 
 type NonNullSubjectMatchType = NonNullable<components['schemas']['SubjectMatchType']>
 
@@ -26,6 +29,7 @@ export const SubjectMatchTypeValue = {
 export const ProcessTypeValue = {
   AttachmentExtraction: 'AttachmentExtraction',
   Alert: 'Alert',
+  ContentArchive: 'ContentArchive',
 } as const satisfies Record<ProcessType, ProcessType>
 
 export interface FilterListFilter {
@@ -55,6 +59,13 @@ export function listFilterSummaries(): Promise<ApiOutcome<FilterSummaryDto[]>> {
   return callApi('list', (api) => api.GET('/api/v1/filters/summary'))
 }
 
+/** Un filtro con i suoi processi: 404 = filtro inesistente. */
+export function getFilter(id: FilterId): Promise<ApiOutcome<FilterDto>> {
+  return callApi('resource', (api) =>
+    api.GET('/api/v1/filters/{id}', { params: { path: { id: Number(id) } } }),
+  )
+}
+
 export function createFilter(body: FilterRequest): Promise<ApiOutcome<FilterDto>> {
   return callApi('resource', (api) => api.POST('/api/v1/filters', { body }))
 }
@@ -82,5 +93,29 @@ export function reapplyFilter(
 ): Promise<ApiOutcome<RunsStartedDto>> {
   return callApi('resource', (api) =>
     api.POST('/api/v1/filters/{id}/reapply', { params: { path: { id: Number(id) } }, body }),
+  )
+}
+
+export interface FilterMessageQuery {
+  sortDir: SortDirection
+  page: number
+  pageSize: number
+}
+
+/**
+ * Mail che corrispondono a un filtro salvato, paginate per data, con lo stato del contenuto archiviato.
+ * 404 = filtro inesistente; nessuna mail = pagina vuota.
+ */
+export function listFilterMessages(
+  id: FilterId,
+  query: FilterMessageQuery,
+): Promise<ApiOutcome<FilterMessagePageDto>> {
+  return callApi('resource', (api) =>
+    api.GET('/api/v1/filters/{id}/messages', {
+      params: {
+        path: { id: Number(id) },
+        query: { SortDir: query.sortDir, Page: query.page, PageSize: query.pageSize },
+      },
+    }),
   )
 }
