@@ -90,12 +90,17 @@ src/
     formatDate.ts
     parseQueryString.ts
   assets/
+    styles/
+      tokens.css        ← unico file con i valori di colore (tema chiaro e scuro)
+      main.css          ← import, esposizione dei token a Tailwind, stili di base
   router/
     index.ts
     routes/             ← definizione route per dominio
       orders.ts
       users.ts
 ```
+
+Nomi dei token, regole di contrasto e gestione del tema chiaro/scuro: `design-tokens.instructions.md`.
 
 ### Regola per `views/`
 
@@ -341,4 +346,4 @@ Le **Regole 1–2** (un componente = un file, generico vs specifico) e la strutt
 
 ---
 
-*Istruzione v1.2 - Frontend Organization (Vue + WPF) - 2026-09-24 — claude-opus-5 — rimando a dr-minimalapi reso condizionale al manifest, con ripiego lato client (dr-guidelines#5)*
+*Istruzione v1.3 - Frontend Organization (Vue + WPF) - 2026-10-11 — claude-opus-5-5 — cartella `assets/styles/` e rimando a `design-tokens.instructions.md` (dr-guidelines#13, #14)*

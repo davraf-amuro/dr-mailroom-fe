@@ -44,3 +44,9 @@ playwright-report/
 
 # Configurazione runtime locale: contiene la chiave API
 public/config.json
+
+# Log locale richieste di permesso agente
+.ai/permessi-richiesti.md
+
+# Appunti locali (non si committa)
+TODO/
