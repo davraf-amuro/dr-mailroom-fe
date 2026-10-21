@@ -45,6 +45,7 @@ function run(overrides: Partial<RunDto> = {}): RunDto {
     errorCount: 0,
     errorSummary: null,
     trashReceivedBeforeUtc: null,
+    trashWithoutAttachmentsOnly: false,
     ...overrides,
   }
 }
@@ -196,6 +197,7 @@ describe('store runs', () => {
       vi.mocked(service.listRuns).mockResolvedValueOnce({ kind: 'ok', data: [run()] })
       const store = await storeWith([mailbox()])
       await store.loadBridge()
+      await store.loadHistory()
       vi.mocked(service.getRun).mockResolvedValue({
         kind: 'ok',
         data: run({ status: 'Completed', messagesRead: 40 }),
@@ -203,7 +205,22 @@ describe('store runs', () => {
       const finished = await store.pollRunning()
       expect(finished.map((r) => r.status)).toEqual(['Completed'])
       expect(store.bridgeHasRunning).toBe(false)
-      expect(service.listRuns).toHaveBeenCalledTimes(2)
+      expect(service.listRuns).toHaveBeenCalledTimes(3)
+    })
+
+    it('cronologia mai caricata → la fine di un giro non la legge', async () => {
+      vi.mocked(service.listRuns).mockResolvedValueOnce({ kind: 'ok', data: [run()] })
+      const store = await storeWith([mailbox()])
+      await store.loadBridge()
+      store.resetHistory()
+      vi.mocked(service.getRun).mockResolvedValue({
+        kind: 'ok',
+        data: run({ status: 'Completed', messagesRead: 40 }),
+      })
+      await store.pollRunning()
+      expect(store.loadState).toBe('idle')
+      expect(store.history).toEqual([])
+      expect(service.listRuns).toHaveBeenCalledTimes(1)
     })
 
     it('?runIds= → cronologia dei soli giri indicati, letti per id', async () => {

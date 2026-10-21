@@ -94,17 +94,49 @@ describe('useTrashSender', () => {
     trash.request()
     await trash.confirm()
 
-    expect(messages.trashSender).toHaveBeenCalledWith(1, SENDER, null)
+    expect(messages.trashSender).toHaveBeenCalledWith(1, SENDER, null, false)
     expect(trash.confirmOpen.value).toBe(false)
     expect(trash.phase.value).toBe('idle')
     expect(notices).toEqual([
       {
-        tone: 'ok',
+        tone: 'info',
         text:
-          `3 mail di ${SENDER} verranno spostate nel cestino di Gmail. ` +
+          `Processo in esecuzione: 3 mail di ${SENDER} verranno spostate nel cestino di Gmail. ` +
           'Dal cestino le recuperi in Gmail per 30 giorni.',
       },
     ])
+    scope.stop()
+  })
+
+  it('senza allegati → conta solo quelle e le passa al giro', async () => {
+    vi.mocked(messages.listSenderMessages).mockResolvedValue({
+      kind: 'ok',
+      data: { items: [], page: 1, pageSize: 1, totalCount: 5 },
+    })
+    vi.mocked(mailboxes.getMailbox).mockResolvedValue({ kind: 'ok', data: mailbox(true) })
+    vi.mocked(messages.trashSender).mockResolvedValue({
+      kind: 'accepted',
+      data: { runId: 44, messagesToTrash: 5 },
+    })
+    const { trash, notices, scope } = setup()
+
+    trash.request('withoutAttachments')
+    await nextTick()
+    await vi.waitFor(() => expect(trash.untilCount.value).toBe(5))
+
+    expect(messages.listSenderMessages).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        mailboxId: 1,
+        senderAddress: SENDER,
+        withoutAttachmentsOnly: true,
+      }),
+    )
+    expect(trash.withoutAttachments.value).toBe(true)
+
+    await trash.confirm()
+
+    expect(messages.trashSender).toHaveBeenCalledWith(1, SENDER, null, true)
+    expect(notices[0]?.text).toMatch(/^Processo in esecuzione: 5 mail senza allegati di /)
     scope.stop()
   })
 
@@ -133,7 +165,7 @@ describe('useTrashSender', () => {
 
     await trash.confirm()
 
-    expect(messages.trashSender).toHaveBeenCalledWith(1, SENDER, before)
+    expect(messages.trashSender).toHaveBeenCalledWith(1, SENDER, before, false)
     expect(notices[0]?.text).toContain('ricevute fino al 1 gennaio 2026')
     scope.stop()
   })

@@ -1,7 +1,6 @@
 import { computed, onMounted, ref, watch } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useRoute, useRouter } from 'vue-router'
-import { watchDebounced } from '@vueuse/core'
 
 import { RUNS_QUERY } from '@/composables/filters/useFilterReapply'
 import { useThrottledAnnouncer } from '@/composables/shared/useThrottledAnnouncer'
@@ -17,7 +16,15 @@ import {
 } from './runPresentation'
 import { useRunPolling } from './useRunPolling'
 
-export const HISTORY_FILTER_DEBOUNCE_MS = 300
+/** Giorni proposti nel filtro "Avviati dal" all'apertura della vista. */
+export const HISTORY_DEFAULT_DAYS = 7
+
+/** Giorno locale (yyyy-mm-dd) di `days` giorni fa, per il campo data. */
+export function localDayDaysAgo(days: number, now: Date = new Date()): string {
+  const day = new Date(now.getFullYear(), now.getMonth(), now.getDate() - days)
+  const pad = (value: number) => String(value).padStart(2, '0')
+  return `${day.getFullYear()}-${pad(day.getMonth() + 1)}-${pad(day.getDate())}`
+}
 
 /** Conferma in sospeso: un giro oppure tutti. */
 export type PendingCancel = { kind: 'one'; run: RunDto } | { kind: 'all' }
@@ -110,25 +117,22 @@ export function useRunsView() {
     pendingCancel.value = null
   }
 
-  // Cronologia: filtri
+  // Cronologia: filtri proposti, letta solo con «Carica» (la tabella dei giri può essere lunga)
   const filterMailbox = ref('')
   const filterTrigger = ref<RunTrigger | ''>('')
   const filterStatus = ref<RunStatus | ''>('')
-  const filterFrom = ref('')
+  const filterFrom = ref(localDayDaysAgo(HISTORY_DEFAULT_DAYS))
   const filterTo = ref('')
 
-  watchDebounced(
-    [filterMailbox, filterTrigger, filterStatus, filterFrom, filterTo],
-    ([mailbox, trigger, status, from, to]) =>
-      void store.setFilter({
-        mailboxId: mailbox === '' ? undefined : Number(mailbox),
-        trigger: trigger === '' ? undefined : trigger,
-        status: status === '' ? undefined : status,
-        startedAtUtcFrom: localDayStartUtc(from),
-        startedAtUtcTo: localDayEndUtc(to),
-      }),
-    { debounce: HISTORY_FILTER_DEBOUNCE_MS },
-  )
+  function loadHistory(): Promise<void> {
+    return store.setFilter({
+      mailboxId: filterMailbox.value === '' ? undefined : Number(filterMailbox.value),
+      trigger: filterTrigger.value === '' ? undefined : filterTrigger.value,
+      status: filterStatus.value === '' ? undefined : filterStatus.value,
+      startedAtUtcFrom: localDayStartUtc(filterFrom.value),
+      startedAtUtcTo: localDayEndUtc(filterTo.value),
+    })
+  }
 
   // Query della riapplica: `?runIds=4,5&skippedMailboxIds=2`
   const focused = computed(() => focusIds.value.length > 0)
@@ -140,7 +144,10 @@ export function useRunsView() {
         parseIdList(query, RUNS_QUERY.runIds),
         parseIdList(query, RUNS_QUERY.skippedMailboxIds),
       )
-      if (previous !== undefined) void store.loadHistory()
+      if (previous === undefined) return
+      // Giri della riapplica: si mostrano subito; «Tutta la cronologia» torna ai filtri, da caricare
+      if (focusIds.value.length > 0) void store.loadHistory()
+      else store.resetHistory()
     },
     { immediate: true },
   )
@@ -153,8 +160,9 @@ export function useRunsView() {
     void store.loadReferences()
     void store.loadBridge()
     void store.loadRecent()
-    // Lo store sopravvive alla vista: i filtri ripartono vuoti come i controlli.
-    void store.setFilter({})
+    // Lo store sopravvive alla vista: la cronologia riparte non caricata, salvo i giri della riapplica.
+    if (focusIds.value.length > 0) void store.loadHistory()
+    else store.resetHistory()
   })
 
   return {
@@ -189,6 +197,7 @@ export function useRunsView() {
     filterTo,
     notice,
     clearNotice: store.clearNotice,
+    loadHistory,
     reload: store.loadHistory,
     liveMessage,
   }

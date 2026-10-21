@@ -1,11 +1,20 @@
 <script setup lang="ts">
 import { useId } from 'vue'
+import { Download } from '@lucide/vue'
+
+import BaseButton from '@/components/shared/BaseButton.vue'
 
 import { runStatusOptions, runTriggerOptions } from '@/composables/runs/runPresentation'
 import type { MailboxDto } from '@/services/mailboxesService'
 import type { RunStatus, RunTrigger } from '@/services/runsService'
 
-defineProps<{ mailboxes: MailboxDto[] }>()
+defineProps<{
+  mailboxes: MailboxDto[]
+  /** Cronologia in lettura: «Carica» annunciato come occupato. */
+  busy?: boolean
+}>()
+
+const emit = defineEmits<{ load: [] }>()
 
 const mailbox = defineModel<string>('mailbox', { required: true })
 const trigger = defineModel<RunTrigger | ''>('trigger', { required: true })
@@ -23,7 +32,7 @@ const controlClass =
     role="search"
     aria-label="Filtra la cronologia"
     class="flex flex-wrap items-end gap-4"
-    @submit.prevent
+    @submit.prevent="emit('load')"
   >
     <div class="min-w-48 flex-1">
       <label :for="`${uid}-mailbox`" class="block text-sm font-semibold">Casella</label>
@@ -72,5 +81,9 @@ const controlClass =
         :class="controlClass"
       />
     </div>
+    <BaseButton type="submit" variant="secondary" :busy="busy">
+      <template #icon><Download :size="20" :stroke-width="1.75" aria-hidden="true" /></template>
+      Carica
+    </BaseButton>
   </form>
 </template>

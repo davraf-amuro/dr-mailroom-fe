@@ -12,7 +12,11 @@ export const TrashMessages = {
   button: 'Elimina tutte',
   untilLabel: 'Fino al (compreso)',
   untilHint: 'Vuoto = tutte le mail. Con una data restano le mail ricevute dal giorno dopo.',
+  /** Seconda azione: solo le mail senza allegati (simbolo per restare compatti, testo completo per gli screen reader). */
+  buttonWithoutAttachments: 'Elimina senza 📎',
+  buttonWithoutAttachmentsLabel: 'Elimina le mail senza allegati',
   confirmTitle: 'Spostare nel cestino tutte le mail di questo mittente?',
+  confirmTitleWithoutAttachments: 'Spostare nel cestino le mail senza allegati di questo mittente?',
   confirmLabel: 'Sposta nel cestino',
   authorizeTitle: 'Autorizzare il cestino?',
   authorizeDescription:
@@ -69,19 +73,34 @@ function mailsText(count: number): string {
 
 /**
  * Descrizione della conferma: cosa succede, a quali mail, e come si torna indietro.
- * Con una data limite dice fino a quando (giorno compreso) e, se noto, quante mail sono.
+ * Con una data limite dice fino a quando (giorno compreso); con withoutAttachments che restano quelle con allegati.
+ * Il numero di mail, se noto, accompagna sempre una selezione parziale.
  */
 export function trashConfirmDescription(
   senderAddress: string,
   untilLabel: string | null = null,
   count: number | null = null,
+  withoutAttachments = false,
 ): string {
-  const which =
-    untilLabel === null
-      ? `Tutte le mail ricevute da ${senderAddress} in questa casella vanno nel cestino di Gmail, ` +
-        'anche quelle fuori dalla ricerca per oggetto.'
-      : `Le mail ricevute da ${senderAddress} in questa casella fino al ${untilLabel} compreso` +
-        `${count === null ? '' : ` (${mailsText(count)})`} vanno nel cestino di Gmail; quelle successive restano.`
+  const howMany = count === null ? '' : ` (${mailsText(count)})`
+  let which: string
+  if (untilLabel === null && !withoutAttachments) {
+    which =
+      `Tutte le mail ricevute da ${senderAddress} in questa casella vanno nel cestino di Gmail, ` +
+      'anche quelle fuori dalla ricerca per oggetto.'
+  } else {
+    const kind = withoutAttachments ? 'Le mail senza allegati' : 'Le mail'
+    const until = untilLabel === null ? '' : ` fino al ${untilLabel} compreso`
+    const kept = [
+      withoutAttachments ? 'quelle con allegati' : null,
+      untilLabel === null ? null : 'quelle successive',
+    ]
+      .filter((part) => part !== null)
+      .join(' e ')
+    which =
+      `${kind} ricevute da ${senderAddress} in questa casella${until}${howMany} vanno nel cestino di Gmail; ` +
+      `${kept} restano.`
+  }
   return (
     `${which} Dal cestino le recuperi in Gmail per ${GMAIL_TRASH_RETENTION_DAYS} giorni; ` +
     'in dr-mailroom spariscono da elenchi e statistiche. ' +
@@ -89,15 +108,20 @@ export function trashConfirmDescription(
   )
 }
 
-/** Avviso dopo la conferma: quante mail di quale mittente (e fino a quando) andranno nel cestino. */
+/**
+ * Avviso dopo la conferma: il processo è partito sul servizio e la vista non ne segue l'esito (si vede in Esecuzioni);
+ * quante mail di quale mittente (senza allegati, fino a quando) andranno nel cestino.
+ */
 export function trashStartedText(
   count: number,
   senderAddress: string,
   untilLabel: string | null = null,
+  withoutAttachments = false,
 ): string {
+  const kind = withoutAttachments ? ' senza allegati' : ''
   const until = untilLabel === null ? '' : ` ricevute fino al ${untilLabel}`
   return (
-    `${mailsText(count)} di ${senderAddress}${until} verranno spostate nel cestino di Gmail. ` +
+    `Processo in esecuzione: ${mailsText(count)}${kind} di ${senderAddress}${until} verranno spostate nel cestino di Gmail. ` +
     `Dal cestino le recuperi in Gmail per ${GMAIL_TRASH_RETENTION_DAYS} giorni.`
   )
 }

@@ -32,6 +32,7 @@ const {
   totalCount,
   loadState,
   searchText,
+  mailboxAddress,
   linkComplete,
   pages,
   filtered,
@@ -65,9 +66,20 @@ const {
   untilDate: trashUntilDate,
   untilCount: trashUntilCount,
   untilLabel: trashUntilLabel,
+  withoutAttachments: trashWithoutAttachments,
 } = trash
+const trashTitle = computed(() =>
+  trashWithoutAttachments.value
+    ? TrashMessages.confirmTitleWithoutAttachments
+    : TrashMessages.confirmTitle,
+)
 const trashDescription = computed(() =>
-  trashConfirmDescription(state.value.senderAddress, trashUntilLabel.value, trashUntilCount.value),
+  trashConfirmDescription(
+    state.value.senderAddress,
+    trashUntilLabel.value,
+    trashUntilCount.value,
+    trashWithoutAttachments.value,
+  ),
 )
 // Il pulsante serve solo con mail da cestinare in elenco (senza ricerca: "tutte" vale per tutto il mittente).
 const canTrash = computed(
@@ -117,6 +129,15 @@ useOAuthReturn((n) => showNotice(n.tone, n.text), readTrashOAuthReturn)
         <p v-if="loadState === 'ready'" class="font-mono tabular text-sm text-ink-muted">
           {{ countText }}{{ filtered ? ' con questo oggetto' : '' }}
         </p>
+        <BaseButton
+          variant="danger-ghost"
+          :disabled="!canTrash"
+          @click="trash.request('withoutAttachments')"
+        >
+          <template #icon><Trash2 :size="20" :stroke-width="1.75" aria-hidden="true" /></template>
+          <span aria-hidden="true">{{ TrashMessages.buttonWithoutAttachments }}</span>
+          <span class="visually-hidden">{{ TrashMessages.buttonWithoutAttachmentsLabel }}</span>
+        </BaseButton>
         <BaseButton variant="danger-ghost" :disabled="!canTrash" @click="trash.request()">
           <template #icon><Trash2 :size="20" :stroke-width="1.75" aria-hidden="true" /></template>
           {{ TrashMessages.button }}
@@ -169,6 +190,7 @@ useOAuthReturn((n) => showNotice(n.tone, n.text), readTrashOAuthReturn)
         <SenderMessagesTable
           :rows="rows"
           :sender-address="state.senderAddress"
+          :mailbox-address="mailboxAddress"
           :sort-dir="state.sortDir"
           :busy="loadState === 'loading'"
           @toggle-sort="toggleSort"
@@ -188,7 +210,7 @@ useOAuthReturn((n) => showNotice(n.tone, n.text), readTrashOAuthReturn)
   <ConfirmDialog
     v-model:open="trashConfirmOpen"
     tone="danger"
-    :title="TrashMessages.confirmTitle"
+    :title="trashTitle"
     :description="trashDescription"
     :confirm-label="TrashMessages.confirmLabel"
     :busy="trashPhase === 'checking' || trashPhase === 'starting'"

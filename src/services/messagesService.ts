@@ -15,6 +15,8 @@ export interface SenderMessageQuery {
   search?: string
   /** Solo le mail ricevute prima di questo istante ISO UTC (estremo escluso). */
   receivedBeforeUtc?: string
+  /** Solo le mail senza allegati (conteggio di "Elimina senza allegati"). */
+  withoutAttachmentsOnly?: boolean
   sortDir: SortDirection
   page: number
   pageSize: number
@@ -41,6 +43,7 @@ export function toSenderMessageParams(query: SenderMessageQuery) {
     SenderAddress: query.senderAddress,
     Search: query.search?.trim() || undefined,
     ReceivedBeforeUtc: query.receivedBeforeUtc,
+    WithoutAttachmentsOnly: query.withoutAttachmentsOnly || undefined,
     SortDir: query.sortDir,
     Page: query.page,
     PageSize: query.pageSize,
@@ -58,16 +61,17 @@ export function listSenderMessages(
 
 /**
  * "Elimina tutte": avvia il giro che sposta nel cestino di Gmail le mail ricevute dal mittente (202, `accepted`).
- * 409 se il cestino non è autorizzato, non c'è nulla da cestinare o la casella è occupata.
+ * Con `withoutAttachmentsOnly` solo quelle senza allegati ("Elimina senza allegati"). 409 se il cestino non è autorizzato, non c'è nulla da cestinare o la casella è occupata.
  */
 export function trashSender(
   mailboxId: number,
   senderAddress: string,
   receivedBeforeUtc: string | null = null,
+  withoutAttachmentsOnly = false,
 ): Promise<ApiOutcome<TrashSenderStartedDto>> {
   return callApi('resource', (api) =>
     api.POST('/api/v1/messages/trash-sender', {
-      body: { mailboxId, senderAddress, receivedBeforeUtc },
+      body: { mailboxId, senderAddress, receivedBeforeUtc, withoutAttachmentsOnly },
     }),
   )
 }

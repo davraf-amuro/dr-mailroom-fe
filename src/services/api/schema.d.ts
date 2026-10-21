@@ -593,7 +593,7 @@ export interface paths {
         };
         /**
          * Mail di un mittente in una casella
-         * @description Griglia delle mail di un mittente (mailboxId e senderAddress obbligatori, mittente confrontato per uguaglianza): oggetto, data di ricezione, label Gmail separate da virgola, presenza di allegati. Paginata (pageSize 1–100, default 25), ordinata per data (sortDir Asc|Desc, default Desc), ricerca facoltativa nell'oggetto, receivedBeforeUtc facoltativo (solo le mail ricevute prima di quell'istante, estremo escluso: il conteggio di "Elimina tutte" fino a una data). 404 se la casella non esiste; nessuna mail → 200 con totalCount 0.
+         * @description Griglia delle mail di un mittente (mailboxId e senderAddress obbligatori, mittente confrontato per uguaglianza): oggetto, data di ricezione, label Gmail separate da virgola, presenza di allegati, id Gmail (per il link "Apri in Gmail"). Paginata (pageSize 1–100, default 25), ordinata per data (sortDir Asc|Desc, default Desc), ricerca facoltativa nell'oggetto, receivedBeforeUtc facoltativo (solo le mail ricevute prima di quell'istante, estremo escluso: il conteggio di "Elimina tutte" fino a una data), withoutAttachmentsOnly facoltativo (solo le mail senza allegati: il conteggio di "Elimina senza allegati"). 404 se la casella non esiste; nessuna mail → 200 con totalCount 0.
          */
         get: operations["GetSenderMessageList"];
         put?: never;
@@ -615,7 +615,7 @@ export interface paths {
         put?: never;
         /**
          * Sposta nel cestino tutte le mail di un mittente
-         * @description "Elimina tutte": avvia un giro (trigger TrashSender) che sposta nel cestino di Gmail le mail ricevute dal mittente nella casella e non ancora cestinate (con receivedBeforeUtc facoltativo solo quelle ricevute prima di quell'istante, estremo escluso: per "fino al giorno X compreso" il client invia l'inizio del giorno dopo), a blocchi da 1.000 (batchModify con label TRASH). Usa il token del cestino (scope gmail.modify, D-T1 bis): la lettura resta in sola lettura. Le mail restano recuperabili da Gmail per 30 giorni; in dr-mailroom spariscono da elenchi e statistiche e il DB le elimina dopo la ritenzione configurata. 404 se la casella non esiste; 409 se non è attiva, il cestino non è autorizzato (GET /mailboxes/{id}/trash-authorization), non c'è nulla da cestinare o la casella ha già un giro in corso. L'avanzamento si segue con GET /runs/{runId}.
+         * @description "Elimina tutte": avvia un giro (trigger TrashSender) che sposta nel cestino di Gmail le mail ricevute dal mittente nella casella e non ancora cestinate (con receivedBeforeUtc facoltativo solo quelle ricevute prima di quell'istante, estremo escluso: per "fino al giorno X compreso" il client invia l'inizio del giorno dopo; con withoutAttachmentsOnly true solo quelle senza allegati), a blocchi da 1.000 (batchModify con label TRASH). Usa il token del cestino (scope gmail.modify, D-T1 bis): la lettura resta in sola lettura. Le mail restano recuperabili da Gmail per 30 giorni; in dr-mailroom spariscono da elenchi e statistiche e il DB le elimina dopo la ritenzione configurata. 404 se la casella non esiste; 409 se non è attiva, il cestino non è autorizzato (GET /mailboxes/{id}/trash-authorization), non c'è nulla da cestinare o la casella ha già un giro in corso. L'avanzamento si segue con GET /runs/{runId}.
          */
         post: operations["PostTrashSender"];
         delete?: never;
@@ -885,8 +885,8 @@ export interface components {
             processes: null | string[];
         };
         /**
-         * @description Giro completo con contatori ed esito; SenderAddress e TrashReceivedBeforeUtc (estremo escluso, null = tutte) solo per
-         *     il cestino di un mittente (TrashSender).
+         * @description Giro completo con contatori ed esito; SenderAddress, TrashReceivedBeforeUtc (estremo escluso, null = tutte) e
+         *     TrashWithoutAttachmentsOnly (solo mail senza allegati) solo per il cestino di un mittente (TrashSender).
          */
         RunDto: {
             /** Format: int64 */
@@ -912,6 +912,7 @@ export interface components {
             errorSummary: null | string;
             /** Format: date-time */
             trashReceivedBeforeUtc: null | string;
+            trashWithoutAttachmentsOnly: boolean;
         };
         /** @description Giri per cui è stato chiesto l'annullamento: si chiudono Cancelled appena il lavoro in corso si ferma. */
         RunsCancelledDto: {
@@ -943,10 +944,14 @@ export interface components {
          * @enum {unknown}
          */
         RunTrigger: "Scheduled" | "Manual" | "Reapply" | "TrashSender";
-        /** @description Riga della griglia delle mail di un mittente. Labels: id delle label Gmail separati da virgola (T2), come salvati. */
+        /**
+         * @description Riga della griglia delle mail di un mittente. Labels: id delle label Gmail separati da virgola (T2), come salvati.
+         *     GmailMessageId: per il link "Apri in Gmail".
+         */
         SenderMessageDto: {
             /** Format: int64 */
             id: number | string;
+            gmailMessageId: string;
             subject: null | string;
             /** Format: date-time */
             receivedAtUtc: string;
@@ -973,7 +978,7 @@ export interface components {
             /** Format: int32 */
             mailCount: number | string;
         };
-        /** @description Mittente (per indirizzo) con numero di mail, quante sono posta inviata, la più vecchia e la più recente (data e oggetto). */
+        /** @description Mittente (per indirizzo) con numero di mail, quante sono posta inviata, quante hanno allegati, la più vecchia e la più recente (data e oggetto). */
         SenderOverviewDto: {
             senderAddress: string;
             senderName: null | string;
@@ -981,6 +986,8 @@ export interface components {
             mailCount: number | string;
             /** Format: int32 */
             sentCount: number | string;
+            /** Format: int32 */
+            attachmentCount: number | string;
             /** Format: date-time */
             firstReceivedAtUtc: string;
             firstSubject: null | string;
@@ -1020,6 +1027,7 @@ export interface components {
         /**
          * @description Body di "Elimina tutte": la casella e il mittente le cui mail ricevute vanno nel cestino di Gmail (D-T1 bis).
          *     ReceivedBeforeUtc facoltativo, estremo escluso: solo le mail ricevute prima di quell'istante; null = tutte.
+         *     WithoutAttachmentsOnly facoltativo: true = solo le mail senza allegati; null/false = tutte.
          */
         TrashSenderRequest: {
             /** Format: int32 */
@@ -1027,6 +1035,7 @@ export interface components {
             senderAddress: null | string;
             /** Format: date-time */
             receivedBeforeUtc?: null | string;
+            withoutAttachmentsOnly?: null | boolean;
         };
         /** @description Giro di cestino avviato: Id del giro da seguire e mail che sposterà nel cestino. */
         TrashSenderStartedDto: {
@@ -2862,6 +2871,8 @@ export interface operations {
                 Search?: string;
                 /** @description Solo le mail ricevute prima di questo istante UTC (estremo escluso): conteggio di "Elimina tutte" fino a una data. */
                 ReceivedBeforeUtc?: string;
+                /** @description Solo le mail senza allegati: conteggio di "Elimina senza allegati". */
+                WithoutAttachmentsOnly?: boolean;
                 /** @description Verso dell'ordinamento per data di ricezione; default Desc (dalla più recente). */
                 SortDir?: components["schemas"]["SortDirection"];
                 /** @description Pagina da 1. */

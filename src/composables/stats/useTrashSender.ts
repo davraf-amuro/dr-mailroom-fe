@@ -24,6 +24,9 @@ export interface TrashTarget {
  */
 export type TrashPhase = 'idle' | 'checking' | 'starting'
 
+/** Quali mail del mittente: tutte, oppure solo quelle senza allegati. */
+export type TrashScope = 'all' | 'withoutAttachments'
+
 export interface UseTrashSenderOptions {
   /** Esiti da mostrare nell'avviso della vista. */
   onNotice: (notice: Notice) => void
@@ -46,28 +49,35 @@ export function useTrashSender(target: Ref<TrashTarget>, options: UseTrashSender
   const confirmOpen = ref(false)
   const authorizeOpen = ref(false)
   const phase = ref<TrashPhase>('idle')
+  const scope = ref<TrashScope>('all')
+  const withoutAttachments = computed(() => scope.value === 'withoutAttachments')
 
   const busy = computed(() => phase.value !== 'idle')
 
   /** Giorno "fino al" del campo data (yyyy-mm-dd, ora locale); "" = tutte le mail. */
   const untilDate = ref('')
-  /** Mail fino al giorno scelto, contate dal server; null = nessuna data o conteggio non disponibile. */
+  /**
+   * Mail coinvolte (fino al giorno scelto e/o senza allegati), contate dal server; null = tutte senza data o
+   * conteggio non disponibile.
+   */
   const untilCount = ref<number | null>(null)
   const receivedBeforeUtc = computed(() => endOfLocalDayExclusiveUtc(untilDate.value))
   const untilLabel = computed(() => untilDateLabel(untilDate.value))
 
   // Con la conferma aperta, ogni data scelta aggiorna il conteggio; le risposte superate si scartano.
   let countRequest = 0
-  watch([untilDate, confirmOpen], async () => {
+  watch([untilDate, confirmOpen, scope], async () => {
     const id = ++countRequest
     const mailboxId = target.value.mailboxId
     const before = receivedBeforeUtc.value
     untilCount.value = null
-    if (!confirmOpen.value || mailboxId === null || before === null) return
+    if (!confirmOpen.value || mailboxId === null || (before === null && !withoutAttachments.value))
+      return
     const outcome = await listSenderMessages({
       mailboxId,
       senderAddress: target.value.senderAddress,
-      receivedBeforeUtc: before,
+      receivedBeforeUtc: before ?? undefined,
+      withoutAttachmentsOnly: withoutAttachments.value,
       sortDir: SortDirectionValue.Desc,
       page: 1,
       pageSize: 1,
@@ -81,9 +91,10 @@ export function useTrashSender(target: Ref<TrashTarget>, options: UseTrashSender
     options.onNotice({ tone: kind === 'conflict' ? 'warning' : 'error', text: detail ?? text })
   }
 
-  /** Primo passo: apre la conferma. */
-  function request(): void {
+  /** Primo passo: apre la conferma, per tutte le mail o solo per quelle senza allegati. */
+  function request(next: TrashScope = 'all'): void {
     if (busy.value || target.value.mailboxId === null) return
+    scope.value = next
     untilDate.value = ''
     confirmOpen.value = true
   }
@@ -131,6 +142,7 @@ export function useTrashSender(target: Ref<TrashTarget>, options: UseTrashSender
       mailboxId,
       target.value.senderAddress,
       receivedBeforeUtc.value,
+      withoutAttachments.value,
     )
     confirmOpen.value = false
     phase.value = 'idle'
@@ -139,11 +151,12 @@ export function useTrashSender(target: Ref<TrashTarget>, options: UseTrashSender
       return
     }
     options.onNotice({
-      tone: 'ok',
+      tone: 'info',
       text: trashStartedText(
         Number(outcome.data.messagesToTrash),
         target.value.senderAddress,
         untilLabel.value,
+        withoutAttachments.value,
       ),
     })
   }
@@ -153,6 +166,8 @@ export function useTrashSender(target: Ref<TrashTarget>, options: UseTrashSender
     authorizeOpen,
     phase,
     busy,
+    scope,
+    withoutAttachments,
     untilDate,
     untilCount,
     untilLabel,

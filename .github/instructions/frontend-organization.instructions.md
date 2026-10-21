@@ -296,7 +296,7 @@ Se il frontend prevede una login e questo non è già stato dichiarato, **chiedi
 ### Dove custodire il token, quando c'è
 
 - Token in **memoria** (store Pinia, variabile di modulo) — è il default
-- `localStorage` **solo** se non evitabile, e dichiarando il motivo: è leggibile da JavaScript, quindi un XSS lo espone
+- **Mai** in `localStorage` né in `sessionStorage`: sono leggibili da qualsiasi script della pagina, quindi un XSS espone il token. Vale per token, credenziali e dati personali, senza eccezioni "se non evitabile" (è la lettura più restrittiva, coerente col ripiego sopra). `localStorage` resta ammesso solo per preferenze non sensibili (tema, lingua, layout)
 - Mai token nel codice sorgente, mai in un file committato — segui `sensitive-data.instructions.md`
 
 ### Collocazione dei file
@@ -342,8 +342,8 @@ Le **Regole 1–2** (un componente = un file, generico vs specifico) e la strutt
 - [ ] Nessuna logica di business nel code-behind XAML o nella `<script>` di una view?
 - [ ] Props Vue tipizzate esplicitamente? UserControl WPF usa DependencyProperty?
 - [ ] Se è prevista una login: lo schema è stato deciso lato API e non qui — seguendo `minimal-api-architecture.instructions.md` se `dr-minimalapi` è nel manifest, altrimenti il ripiego della sezione "La login non si implementa nel frontend", dichiarando quale dei due si è applicato?
-- [ ] Route guard nel router e non sparsa nelle view? Nessun token in `localStorage` senza motivo dichiarato?
+- [ ] Route guard nel router e non sparsa nelle view? Nessun token o dato sensibile in `localStorage`/`sessionStorage`?
 
 ---
 
-*Istruzione v1.3 - Frontend Organization (Vue + WPF) - 2026-10-11 — claude-opus-5-5 — cartella `assets/styles/` e rimando a `design-tokens.instructions.md` (dr-guidelines#13, #14)*
+*Istruzione v1.4 - Frontend Organization (Vue + WPF) - 2026-10-20 — claude-opus-5-5 — `localStorage` uniformato: vietato per token e dati sensibili, ammesso solo per preferenze non sensibili (era contraddittorio fra Regola 7 e checklist). v1.3 (2026-10-11): cartella `assets/styles/` e rimando a `design-tokens.instructions.md` (dr-guidelines#13, #14)*

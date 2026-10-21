@@ -45,10 +45,10 @@ describe('testi', () => {
 
   it('avviso dopo la conferma: quante mail, di chi, e i 30 giorni', () => {
     expect(trashStartedText(1234, 'no-reply@spam.example')).toBe(
-      '1.234 mail di no-reply@spam.example verranno spostate nel cestino di Gmail. ' +
+      'Processo in esecuzione: 1.234 mail di no-reply@spam.example verranno spostate nel cestino di Gmail. ' +
         'Dal cestino le recuperi in Gmail per 30 giorni.',
     )
-    expect(trashStartedText(1, 'a@b.it')).toMatch(/^1 mail di a@b\.it/)
+    expect(trashStartedText(1, 'a@b.it')).toMatch(/^Processo in esecuzione: 1 mail di a@b\.it/)
   })
 })
 
@@ -79,7 +79,27 @@ describe('data "fino al"', () => {
 
   it('l’avviso dopo l’avvio ripete la data', () => {
     expect(trashStartedText(2, 'a@b.it', '1 gennaio 2026')).toMatch(
-      /^2 mail di a@b\.it ricevute fino al 1 gennaio 2026 verranno spostate/,
+      /^Processo in esecuzione: 2 mail di a@b\.it ricevute fino al 1 gennaio 2026 verranno spostate/,
+    )
+  })
+})
+
+describe('solo senza allegati', () => {
+  it('la conferma dice quante sono e che restano quelle con allegati', () => {
+    const text = trashConfirmDescription('a@b.it', null, 296, true)
+    expect(text).toContain('Le mail senza allegati ricevute da a@b.it in questa casella (296 mail)')
+    expect(text).toContain('quelle con allegati restano')
+  })
+
+  it('con una data restano anche le successive', () => {
+    const text = trashConfirmDescription('a@b.it', '1 gennaio 2026', 3, true)
+    expect(text).toContain('fino al 1 gennaio 2026 compreso (3 mail)')
+    expect(text).toContain('quelle con allegati e quelle successive restano')
+  })
+
+  it('l’avviso dopo l’avvio lo ripete', () => {
+    expect(trashStartedText(2, 'a@b.it', null, true)).toMatch(
+      /^Processo in esecuzione: 2 mail senza allegati di a@b\.it verranno/,
     )
   })
 })

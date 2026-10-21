@@ -48,6 +48,7 @@ const {
   filterTo,
   notice,
   clearNotice,
+  loadHistory,
   reload,
   liveMessage,
 } = useRunsView()
@@ -117,10 +118,18 @@ const {
         v-model:from="filterFrom"
         v-model:to="filterTo"
         :mailboxes="mailboxes"
+        :busy="loadState === 'loading'"
+        @load="loadHistory()"
+      />
+
+      <EmptyState
+        v-if="!focused && loadState === 'idle'"
+        title="Cronologia non caricata"
+        description="Scegli casella, origine, stato o date e premi «Carica» per leggere i giri."
       />
 
       <ProgressMeter
-        v-if="loadState === 'loading' && history.length === 0"
+        v-else-if="loadState === 'loading' && history.length === 0"
         label="Lettura della cronologia"
         class="max-w-md"
       />
