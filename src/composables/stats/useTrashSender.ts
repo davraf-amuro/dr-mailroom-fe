@@ -151,7 +151,7 @@ export function useTrashSender(target: Ref<TrashTarget>, options: UseTrashSender
       return
     }
     options.onNotice({
-      tone: 'ok',
+      tone: 'info',
       text: trashStartedText(
         Number(outcome.data.messagesToTrash),
         target.value.senderAddress,

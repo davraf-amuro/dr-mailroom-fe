@@ -138,6 +138,11 @@ export const useStatsStore = defineStore('stats', () => {
     top.value = outcome.kind === 'ok' ? outcome.data.items : []
   }
 
+  /** Rilettura completa della casella scelta (riapertura della vista): totale per anno, tabella e classifica. */
+  async function reload(): Promise<void> {
+    await Promise.all([loadYears(), loadOverview(), loadTop()])
+  }
+
   async function loadYears(): Promise<void> {
     if (mailboxId.value === '') return
     const outcome = await listYearStats(Number(mailboxId.value))
@@ -222,6 +227,7 @@ export const useStatsStore = defineStore('stats', () => {
     clearNotice,
     loadMailboxes,
     loadOverview,
+    reload,
     selectMailbox,
     setYear,
     setSearch,

@@ -115,9 +115,10 @@ export function useStatsView() {
   const filtered = computed(() => search.value.trim() !== '')
 
   onMounted(() => {
-    // Lo store sopravvive alla vista: se una casella è già scelta si rilegge, altrimenti si propone la prima.
+    // Lo store sopravvive alla vista: se una casella è già scelta si rilegge tutto (anche classifica e totale,
+    // cambiati da un cestino), altrimenti si propone la prima.
     if (mailboxId.value === '') void store.loadMailboxes()
-    else void Promise.all([store.loadMailboxes(), store.loadOverview()])
+    else void Promise.all([store.loadMailboxes(), store.reload()])
   })
 
   return {

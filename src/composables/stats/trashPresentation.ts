@@ -108,7 +108,10 @@ export function trashConfirmDescription(
   )
 }
 
-/** Avviso dopo la conferma: quante mail di quale mittente (senza allegati, fino a quando) andranno nel cestino. */
+/**
+ * Avviso dopo la conferma: il processo è partito sul servizio e la vista non ne segue l'esito (si vede in Esecuzioni);
+ * quante mail di quale mittente (senza allegati, fino a quando) andranno nel cestino.
+ */
 export function trashStartedText(
   count: number,
   senderAddress: string,
@@ -118,7 +121,7 @@ export function trashStartedText(
   const kind = withoutAttachments ? ' senza allegati' : ''
   const until = untilLabel === null ? '' : ` ricevute fino al ${untilLabel}`
   return (
-    `${mailsText(count)}${kind} di ${senderAddress}${until} verranno spostate nel cestino di Gmail. ` +
+    `Processo in esecuzione: ${mailsText(count)}${kind} di ${senderAddress}${until} verranno spostate nel cestino di Gmail. ` +
     `Dal cestino le recuperi in Gmail per ${GMAIL_TRASH_RETENTION_DAYS} giorni.`
   )
 }

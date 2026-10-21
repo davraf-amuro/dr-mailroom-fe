@@ -79,6 +79,19 @@ describe('store stats', () => {
     expect(store.pages).toBe(3)
   })
 
+  it('riapertura della vista → rilegge anni, tabella e classifica della casella scelta', async () => {
+    const store = useStatsStore()
+    await store.loadMailboxes()
+    overview().mockClear()
+    vi.mocked(service.listYearStats).mockClear()
+
+    await store.reload()
+
+    expect(overview()).toHaveBeenCalledTimes(2)
+    expect(overview()).toHaveBeenCalledWith(expect.objectContaining({ pageSize: 20 }))
+    expect(service.listYearStats).toHaveBeenCalledWith(1)
+  })
+
   it('casella eliminata proposta solo se non ce ne sono di attive', () => {
     expect(defaultMailboxId([{ id: 2, emailAddress: 'x', status: 'Deleted' }])).toBe('2')
     expect(defaultMailboxId([])).toBe('')

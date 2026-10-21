@@ -45,10 +45,10 @@ describe('testi', () => {
 
   it('avviso dopo la conferma: quante mail, di chi, e i 30 giorni', () => {
     expect(trashStartedText(1234, 'no-reply@spam.example')).toBe(
-      '1.234 mail di no-reply@spam.example verranno spostate nel cestino di Gmail. ' +
+      'Processo in esecuzione: 1.234 mail di no-reply@spam.example verranno spostate nel cestino di Gmail. ' +
         'Dal cestino le recuperi in Gmail per 30 giorni.',
     )
-    expect(trashStartedText(1, 'a@b.it')).toMatch(/^1 mail di a@b\.it/)
+    expect(trashStartedText(1, 'a@b.it')).toMatch(/^Processo in esecuzione: 1 mail di a@b\.it/)
   })
 })
 
@@ -79,7 +79,7 @@ describe('data "fino al"', () => {
 
   it('l’avviso dopo l’avvio ripete la data', () => {
     expect(trashStartedText(2, 'a@b.it', '1 gennaio 2026')).toMatch(
-      /^2 mail di a@b\.it ricevute fino al 1 gennaio 2026 verranno spostate/,
+      /^Processo in esecuzione: 2 mail di a@b\.it ricevute fino al 1 gennaio 2026 verranno spostate/,
     )
   })
 })
@@ -99,7 +99,7 @@ describe('solo senza allegati', () => {
 
   it('l’avviso dopo l’avvio lo ripete', () => {
     expect(trashStartedText(2, 'a@b.it', null, true)).toMatch(
-      /^2 mail senza allegati di a@b\.it verranno/,
+      /^Processo in esecuzione: 2 mail senza allegati di a@b\.it verranno/,
     )
   })
 })

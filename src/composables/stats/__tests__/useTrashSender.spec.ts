@@ -99,9 +99,9 @@ describe('useTrashSender', () => {
     expect(trash.phase.value).toBe('idle')
     expect(notices).toEqual([
       {
-        tone: 'ok',
+        tone: 'info',
         text:
-          `3 mail di ${SENDER} verranno spostate nel cestino di Gmail. ` +
+          `Processo in esecuzione: 3 mail di ${SENDER} verranno spostate nel cestino di Gmail. ` +
           'Dal cestino le recuperi in Gmail per 30 giorni.',
       },
     ])
@@ -136,7 +136,7 @@ describe('useTrashSender', () => {
     await trash.confirm()
 
     expect(messages.trashSender).toHaveBeenCalledWith(1, SENDER, null, true)
-    expect(notices[0]?.text).toMatch(/^5 mail senza allegati di /)
+    expect(notices[0]?.text).toMatch(/^Processo in esecuzione: 5 mail senza allegati di /)
     scope.stop()
   })
 
