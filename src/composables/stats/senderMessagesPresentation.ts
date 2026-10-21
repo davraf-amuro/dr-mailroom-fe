@@ -63,3 +63,15 @@ export function senderMessagesLocation(mailboxId: number, senderAddress: string)
     query: { mailboxId: String(mailboxId), sender: senderAddress },
   }
 }
+
+/** Indirizzo base della webmail di Gmail. */
+export const GMAIL_WEB_URL = 'https://mail.google.com/mail/u/'
+
+/**
+ * Link "Apri in Gmail" di un messaggio. Con l'indirizzo della casella Gmail apre l'account giusto anche con più
+ * account collegati nel browser (authuser); senza, apre il primo account.
+ */
+export function gmailMessageUrl(gmailMessageId: string, account: string | null = null): string {
+  const user = account === null ? '0/' : `?authuser=${encodeURIComponent(account)}`
+  return `${GMAIL_WEB_URL}${user}#all/${encodeURIComponent(gmailMessageId)}`
+}

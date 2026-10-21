@@ -13,6 +13,7 @@ function mountTable(sortDir: 'Asc' | 'Desc' = 'Desc') {
       rows: [
         {
           id: 1,
+          gmailMessageId: '18c2f0a1b2c3d4e5',
           subject: markup,
           receivedAtUtc: '2026-01-01T08:00:00',
           labels: 'INBOX,CATEGORY_PROMOTIONS,Label_12',
@@ -20,6 +21,7 @@ function mountTable(sortDir: 'Asc' | 'Desc' = 'Desc') {
         },
         {
           id: 2,
+          gmailMessageId: '18c2f0a1b2c3d4e6',
           subject: null,
           receivedAtUtc: '2025-06-01T08:00:00',
           labels: null,

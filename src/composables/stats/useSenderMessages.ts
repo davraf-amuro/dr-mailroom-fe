@@ -11,6 +11,7 @@ import {
   type SenderMessagesState,
 } from '@/composables/stats/senderMessagesPresentation'
 import { pageCount } from '@/composables/stats/statsPresentation'
+import { getMailbox } from '@/services/mailboxesService'
 import { listSenderMessages, type SenderMessageDto } from '@/services/messagesService'
 import { SortDirectionValue } from '@/services/statsService'
 import type { LoadState } from '@/stores/stats'
@@ -34,6 +35,8 @@ export function useSenderMessages() {
   const totalCount = ref(0)
   const loadState = ref<LoadState>('idle')
   const searchText = ref(state.value.search)
+  /** Indirizzo della casella, per aprire le mail nell'account Gmail giusto; null finché non è noto. */
+  const mailboxAddress = ref<string | null>(null)
   const { notice, showNotice, clearNotice } = useNotice()
 
   /** Link completo: casella valida e mittente presente. */
@@ -122,12 +125,27 @@ export function useSenderMessages() {
     { immediate: true },
   )
 
+  // Casella del link: se ne legge l'indirizzo una volta per casella (errori ignorati: il link Gmail resta valido).
+  watch(
+    () => state.value.mailboxId,
+    async (mailboxId) => {
+      mailboxAddress.value = null
+      if (mailboxId === null) return
+      const outcome = await getMailbox(mailboxId)
+      if (outcome.kind === 'ok' && state.value.mailboxId === mailboxId) {
+        mailboxAddress.value = outcome.data.emailAddress
+      }
+    },
+    { immediate: true },
+  )
+
   return {
     state,
     rows,
     totalCount,
     loadState,
     searchText,
+    mailboxAddress,
     linkComplete,
     pages,
     filtered,

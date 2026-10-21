@@ -128,8 +128,19 @@ export const useRunsStore = defineStore('runs', () => {
     loadState.value = result === 'ok' ? 'ready' : result
   }
 
-  /** Dopo la fine di un giro: niente stato "loading", un errore lascia l'ultimo elenco. */
+  /** Cronologia non caricata ("idle"): la si legge solo quando l'utente preme «Carica». */
+  function resetHistory(): void {
+    history.value = []
+    filter.value = {}
+    loadState.value = 'idle'
+  }
+
+  /**
+   * Dopo la fine di un giro: niente stato "loading", un errore lascia l'ultimo elenco.
+   * Cronologia mai caricata → resta tale.
+   */
   async function refreshSilently(): Promise<void> {
+    if (loadState.value === 'idle') return
     if (focusIds.value.length > 0) {
       history.value = await fetchRuns(focusIds.value)
     } else {
@@ -321,6 +332,7 @@ export const useRunsStore = defineStore('runs', () => {
     clearNotice,
     loadReferences,
     loadHistory,
+    resetHistory,
     loadRecent,
     loadBridge,
     setFilter,

@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import { ArrowDown, ArrowUp, Paperclip } from '@lucide/vue'
+import { ArrowDown, ArrowUp, ExternalLink, Paperclip } from '@lucide/vue'
 
 import BaseBadge from '@/components/shared/BaseBadge.vue'
+import { gmailMessageUrl } from '@/composables/stats/senderMessagesPresentation'
 import { subjectText } from '@/composables/stats/statsPresentation'
 import type { SenderMessageDto } from '@/services/messagesService'
 import { SortDirectionValue, type SortDirection } from '@/services/statsService'
@@ -12,6 +13,8 @@ import { isSystemLabel, labelText, splitLabels } from '@/utils/gmailLabels'
 const props = defineProps<{
   rows: SenderMessageDto[]
   senderAddress: string
+  /** Indirizzo della casella per il link "Apri in Gmail"; null = primo account del browser. */
+  mailboxAddress?: string | null
   sortDir: SortDirection
   /** Pagina in caricamento: la tabella resta visibile ma annunciata come occupata. */
   busy?: boolean
@@ -34,6 +37,7 @@ const items = computed(() =>
       system: isSystemLabel(id),
     })),
     hasAttachments: row.hasAttachments,
+    gmailUrl: gmailMessageUrl(row.gmailMessageId, props.mailboxAddress ?? null),
   })),
 )
 </script>
@@ -41,12 +45,12 @@ const items = computed(() =>
 <template>
   <div class="overflow-x-auto" :aria-busy="busy ? 'true' : undefined">
     <!-- Su schermi stretti la tabella scorre in orizzontale invece di schiacciare gli oggetti -->
-    <table class="w-full min-w-[52rem] border-collapse text-left">
+    <table class="w-full min-w-[60rem] border-collapse text-left">
       <caption class="visually-hidden">
         Mail di
         {{
           senderAddress
-        }}: oggetto, data di ricezione, label e allegati
+        }}: oggetto, data di ricezione, label, allegati e link a Gmail
       </caption>
       <thead>
         <tr class="border-b border-control-border">
@@ -74,6 +78,9 @@ const items = computed(() =>
           <th scope="col" class="px-3 py-2 text-sm font-semibold text-ink-muted">Label</th>
           <th scope="col" class="px-3 py-2 text-center text-sm font-semibold text-ink-muted">
             Allegati
+          </th>
+          <th scope="col" class="px-3 py-2 text-sm font-semibold text-ink-muted">
+            <span class="visually-hidden">Apri in Gmail</span>
           </th>
         </tr>
       </thead>
@@ -119,6 +126,18 @@ const items = computed(() =>
               <span aria-hidden="true">—</span>
               <span class="visually-hidden">Nessun allegato</span>
             </span>
+          </td>
+          <td class="px-3 py-2 text-right">
+            <a
+              :href="row.gmailUrl"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="inline-flex min-h-11 items-center gap-1.5 rounded-full px-3 font-semibold whitespace-nowrap text-federal hover:underline"
+            >
+              <ExternalLink :size="18" :stroke-width="1.75" aria-hidden="true" />
+              Apri in Gmail
+              <span class="visually-hidden">(nuova scheda): {{ subjectText(row.subject) }}</span>
+            </a>
           </td>
         </tr>
       </tbody>

@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 
 import {
+  gmailMessageUrl,
   parseSenderMessagesQuery,
   senderMessagesLocation,
   toSenderMessagesQuery,
@@ -73,5 +74,19 @@ describe('senderMessagesLocation', () => {
       name: 'stats-messages',
       query: { mailboxId: '2', sender: 'a@x.it' },
     })
+  })
+})
+
+describe('Apri in Gmail', () => {
+  it('con la casella apre il suo account (authuser)', () => {
+    expect(gmailMessageUrl('18c2f0a1b2c3d4e5', 'io+news@gmail.com')).toBe(
+      'https://mail.google.com/mail/u/?authuser=io%2Bnews%40gmail.com#all/18c2f0a1b2c3d4e5',
+    )
+  })
+
+  it('senza casella apre il primo account', () => {
+    expect(gmailMessageUrl('18c2f0a1b2c3d4e5')).toBe(
+      'https://mail.google.com/mail/u/0/#all/18c2f0a1b2c3d4e5',
+    )
   })
 })

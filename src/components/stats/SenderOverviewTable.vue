@@ -6,6 +6,7 @@ import {
   CalendarRange,
   FilterIcon,
   Mails,
+  Paperclip,
   Send,
 } from '@lucide/vue'
 
@@ -58,7 +59,8 @@ function ariaSort(column: SortColumn) {
     <!-- Su schermi stretti la tabella scorre in orizzontale invece di spezzare gli indirizzi -->
     <table class="w-full min-w-[56rem] border-collapse text-left">
       <caption class="visually-hidden">
-        Mittenti della casella: numero di mail, la più recente e la più vecchia
+        Mittenti della casella: numero di mail (tra parentesi quante con allegati), la più recente e
+        la più vecchia
       </caption>
       <thead>
         <tr class="border-b border-control-border">
@@ -111,8 +113,22 @@ function ariaSort(column: SortColumn) {
               <template #icon><Send :size="16" :stroke-width="1.75" aria-hidden="true" /></template>
             </BaseBadge>
           </th>
-          <td class="px-3 py-2 text-right font-mono tabular">
+          <td class="px-3 py-2 text-right font-mono tabular whitespace-nowrap">
             {{ formatCount(Number(row.mailCount)) }}
+            <span
+              v-if="Number(row.attachmentCount) > 0"
+              class="text-sm text-ink-muted"
+              :title="`${formatCount(Number(row.attachmentCount))} con allegati`"
+            >
+              <span aria-hidden="true"
+                >(<Paperclip :size="14" :stroke-width="1.75" class="inline-block align-[-2px]" />{{
+                  formatCount(Number(row.attachmentCount))
+                }})</span
+              >
+              <span class="visually-hidden"
+                >, {{ formatCount(Number(row.attachmentCount)) }} con allegati</span
+              >
+            </span>
           </td>
           <td class="max-w-80 px-3 py-2">
             <time :datetime="row.lastReceivedAtUtc" class="block text-sm whitespace-nowrap">{{

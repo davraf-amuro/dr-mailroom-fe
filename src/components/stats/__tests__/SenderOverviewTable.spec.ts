@@ -16,6 +16,7 @@ function mountTable(sentCount = 0) {
           senderName: '<i>Nome</i>',
           mailCount: 1500,
           sentCount,
+          attachmentCount: 49,
           firstReceivedAtUtc: '2024-01-01T08:00:00',
           firstSubject: markup,
           lastReceivedAtUtc: '2026-01-01T08:00:00',

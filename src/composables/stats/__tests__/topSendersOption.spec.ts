@@ -19,6 +19,7 @@ function sender(overrides: Partial<SenderOverviewDto> = {}): SenderOverviewDto {
     senderName: null,
     mailCount: 1234,
     sentCount: 0,
+    attachmentCount: 0,
     firstReceivedAtUtc: '2025-01-01T08:00:00',
     firstSubject: null,
     lastReceivedAtUtc: '2026-10-13T19:10:00',

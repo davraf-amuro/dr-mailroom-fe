@@ -83,3 +83,23 @@ describe('data "fino al"', () => {
     )
   })
 })
+
+describe('solo senza allegati', () => {
+  it('la conferma dice quante sono e che restano quelle con allegati', () => {
+    const text = trashConfirmDescription('a@b.it', null, 296, true)
+    expect(text).toContain('Le mail senza allegati ricevute da a@b.it in questa casella (296 mail)')
+    expect(text).toContain('quelle con allegati restano')
+  })
+
+  it('con una data restano anche le successive', () => {
+    const text = trashConfirmDescription('a@b.it', '1 gennaio 2026', 3, true)
+    expect(text).toContain('fino al 1 gennaio 2026 compreso (3 mail)')
+    expect(text).toContain('quelle con allegati e quelle successive restano')
+  })
+
+  it('l’avviso dopo l’avvio lo ripete', () => {
+    expect(trashStartedText(2, 'a@b.it', null, true)).toMatch(
+      /^2 mail senza allegati di a@b\.it verranno/,
+    )
+  })
+})
