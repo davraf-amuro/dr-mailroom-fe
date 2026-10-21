@@ -30,6 +30,7 @@ const {
   state,
   rows,
   totalCount,
+  withoutAttachmentsCount,
   loadState,
   searchText,
   mailboxAddress,
@@ -85,6 +86,13 @@ const trashDescription = computed(() =>
 const canTrash = computed(
   () => loadState.value === 'ready' && totalCount.value > 0 && !trash.busy.value,
 )
+// "Elimina senza 📎" serve solo se c'è almeno una mail senza allegati (conteggio ignoto: resta attivo).
+const canTrashWithoutAttachments = computed(
+  () => canTrash.value && withoutAttachmentsCount.value !== 0,
+)
+const withoutAttachmentsText = computed(() =>
+  withoutAttachmentsCount.value === null ? '' : formatCount(withoutAttachmentsCount.value),
+)
 
 // Ritorno dal consenso Google del cestino: esito nell'avviso, query string ripulita.
 useOAuthReturn((n) => showNotice(n.tone, n.text), readTrashOAuthReturn)
@@ -129,18 +137,25 @@ useOAuthReturn((n) => showNotice(n.tone, n.text), readTrashOAuthReturn)
         <p v-if="loadState === 'ready'" class="font-mono tabular text-sm text-ink-muted">
           {{ countText }}{{ filtered ? ' con questo oggetto' : '' }}
         </p>
+        <BaseButton variant="danger-ghost" :disabled="!canTrash" @click="trash.request()">
+          <template #icon><Trash2 :size="20" :stroke-width="1.75" aria-hidden="true" /></template>
+          {{ TrashMessages.button }}
+        </BaseButton>
+        <p
+          v-if="loadState === 'ready' && withoutAttachmentsText"
+          class="font-mono tabular text-sm text-ink-muted"
+        >
+          <span aria-hidden="true">{{ withoutAttachmentsText }} senza 📎</span>
+          <span class="visually-hidden">{{ withoutAttachmentsText }} senza allegati</span>
+        </p>
         <BaseButton
           variant="danger-ghost"
-          :disabled="!canTrash"
+          :disabled="!canTrashWithoutAttachments"
           @click="trash.request('withoutAttachments')"
         >
           <template #icon><Trash2 :size="20" :stroke-width="1.75" aria-hidden="true" /></template>
           <span aria-hidden="true">{{ TrashMessages.buttonWithoutAttachments }}</span>
           <span class="visually-hidden">{{ TrashMessages.buttonWithoutAttachmentsLabel }}</span>
-        </BaseButton>
-        <BaseButton variant="danger-ghost" :disabled="!canTrash" @click="trash.request()">
-          <template #icon><Trash2 :size="20" :stroke-width="1.75" aria-hidden="true" /></template>
-          {{ TrashMessages.button }}
         </BaseButton>
       </div>
     </div>

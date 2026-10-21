@@ -33,6 +33,8 @@ export function useSenderMessages() {
   const state = computed<SenderMessagesState>(() => parseSenderMessagesQuery(route.query))
   const rows = ref<SenderMessageDto[]>([])
   const totalCount = ref(0)
+  /** Mail senza allegati con gli stessi filtri della griglia; null = conteggio non disponibile. */
+  const withoutAttachmentsCount = ref<number | null>(null)
   const loadState = ref<LoadState>('idle')
   const searchText = ref(state.value.search)
   /** Indirizzo della casella, per aprire le mail nell'account Gmail giusto; null finché non è noto. */
@@ -54,20 +56,35 @@ export function useSenderMessages() {
     if (current.mailboxId === null || current.senderAddress === '') {
       rows.value = []
       totalCount.value = 0
+      withoutAttachmentsCount.value = null
       loadState.value = 'idle'
       return
     }
     const id = ++request
     loadState.value = 'loading'
-    const outcome = await listSenderMessages({
-      mailboxId: current.mailboxId,
-      senderAddress: current.senderAddress,
-      search: current.search,
-      sortDir: current.sortDir,
-      page: current.page,
-      pageSize: SENDER_MESSAGES_PAGE_SIZE,
-    })
+    // Griglia e conteggio "senza allegati" in parallelo: il secondo chiede solo il totale (pageSize 1).
+    const [outcome, withoutAttachments] = await Promise.all([
+      listSenderMessages({
+        mailboxId: current.mailboxId,
+        senderAddress: current.senderAddress,
+        search: current.search,
+        sortDir: current.sortDir,
+        page: current.page,
+        pageSize: SENDER_MESSAGES_PAGE_SIZE,
+      }),
+      listSenderMessages({
+        mailboxId: current.mailboxId,
+        senderAddress: current.senderAddress,
+        search: current.search,
+        withoutAttachmentsOnly: true,
+        sortDir: current.sortDir,
+        page: 1,
+        pageSize: 1,
+      }),
+    ])
     if (id !== request) return
+    withoutAttachmentsCount.value =
+      withoutAttachments.kind === 'ok' ? Number(withoutAttachments.data.totalCount) : null
     if (outcome.kind === 'ok') {
       rows.value = outcome.data.items
       totalCount.value = Number(outcome.data.totalCount)
@@ -143,6 +160,7 @@ export function useSenderMessages() {
     state,
     rows,
     totalCount,
+    withoutAttachmentsCount,
     loadState,
     searchText,
     mailboxAddress,
