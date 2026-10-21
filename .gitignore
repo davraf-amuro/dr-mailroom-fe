@@ -50,3 +50,7 @@ public/config.json
 
 # Appunti locali (non si committa)
 TODO/
+
+# Claude Code: impostazioni locali e copia di sicurezza dell'installer dr-*
+.claude/settings.local.json
+.claude/settings.json.bak
