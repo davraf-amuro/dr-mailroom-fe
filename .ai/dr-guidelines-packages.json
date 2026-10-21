@@ -2,13 +2,13 @@
   "installed": [
     {
       "package": "dr-fe",
-      "installedAt": "2026-10-16",
-      "commit": "c40ff0901651df3b17b2f62b428eea1286e7b11a"
+      "installedAt": "2026-10-21",
+      "commit": "7ce05f324cdafd6ffaab3e51071162dc7f8725db"
     },
     {
       "package": "dr-guidelines",
-      "installedAt": "2026-10-16",
-      "commit": "49883b8058568967a94d2a05d8c1af9ea98f7d52"
+      "installedAt": "2026-10-21",
+      "commit": "cdd6c092ea42b14845890fb8dd541d03eb61fb0b"
     }
   ]
 }
